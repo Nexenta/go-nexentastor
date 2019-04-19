@@ -86,11 +86,11 @@ release:
 		Are you sure? [y/N]: "
 	@(read ANSWER && case "$$ANSWER" in [yY]) true;; *) false;; esac)
 	make generate-changelog-and-docs
-	#git add CHANGELOG.md docs
-	#git commit -m "release ${VERSION}"
-	#git push
-	#git tag ${VERSION}
-	#git push --tags
+	git add CHANGELOG.md docs
+	git commit -m "release ${VERSION}"
+	git push
+	git tag ${VERSION}
+	git push --tags
 
 .PHONY: generate-changelog-and-docs
 generate-changelog-and-docs:
