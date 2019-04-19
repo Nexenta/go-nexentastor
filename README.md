@@ -11,9 +11,11 @@ Go API library for [NexentaStor](https://nexenta.com/products/nexentastor).
 
 See [CHANGELOG.md](./CHANGELOG.md)
 
-## Usage
+## Documentation
 
-TODO
+To see specific docs for a specific version, change Git branch to this version tag.
+
+Current version documentation is [here](./docs).
 
 ## Development
 
@@ -70,12 +72,12 @@ To update deps run:
 Each API change MUST be released as git tag (X.X.X):
 
 ```bash
-make test-container
-# go get -u github.com/git-chglog/git-chglog/cmd/git-chglog
-~/go/bin/git-chglog --next-tag X.X.X -o CHANGELOG.md
-git add CHANGELOG.md
-git commit -m "release X.X.X"
+export NEXT_TAG=X.X.X
+make pre-release-container
+git diff
+git add .
+git commit -m "release ${NEXT_TAG}"
 git push
-git tag X.X.X
+git tag "${NEXT_TAG}"
 git push --tags
 ```

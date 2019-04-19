@@ -1,0 +1,27 @@
+# pre-release container generates:
+# - CNAHGELOG.md
+# - docs
+
+FROM golang:1.12
+
+WORKDIR /go/src/github.com/Nexenta/go-nexentastor/
+
+# deps
+RUN go get github.com/git-chglog/git-chglog/cmd/git-chglog
+RUN go get github.com/robertkrimen/godocdown/godocdown
+
+# source code
+COPY . ./
+
+# next release tag
+ARG NEXT_TAG
+ENV NEXT_TAG=$NEXT_TAG
+
+# generate changelkog
+RUN /go/bin/git-chglog --next-tag ${NEXT_TAG} -o CHANGELOG.md
+
+# generate docs
+RUN /go/bin/godocdown ./pkg/ns > docs/ns.md
+RUN /go/bin/godocdown ./pkg/rest > docs/rest.md
+
+ENTRYPOINT ["/bin/bash"]

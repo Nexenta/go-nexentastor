@@ -10,6 +10,10 @@
 DOCKER_FILE_TESTS = Dockerfile.tests
 DOCKER_IMAGE_TESTS = go-nexentastor-tests
 
+DOCKER_FILE_PRE_RELEASE = Dockerfile.pre-release
+DOCKER_IMAGE_PRE_RELEASE = go-nexentastor-pre-release
+DOCKER_CONTAINER_PRE_RELEASE = ${DOCKER_IMAGE_PRE_RELEASE}-container
+
 .PHONY: all
 all: test
 
@@ -68,6 +72,22 @@ endif
 check-env-TEST_NS_HA_2:
 ifeq ($(strip ${TEST_NS_HA_2}),)
 	$(error "Error: environment variable TEST_NS_HA_2 is not set (e.i. https://10.3.199.254:8443)")
+endif
+
+.PHONY: pre-release-container
+pre-release-container: check-env-NEXT_TAG
+	@echo "Next release tag: ${NEXT_TAG}"
+	docker build -f ${DOCKER_FILE_PRE_RELEASE} -t ${DOCKER_IMAGE_PRE_RELEASE} --build-arg NEXT_TAG=${NEXT_TAG} .
+	docker rm -f ${DOCKER_CONTAINER_PRE_RELEASE} || true
+	docker create --name ${DOCKER_CONTAINER_PRE_RELEASE} ${DOCKER_IMAGE_PRE_RELEASE}
+	docker cp ${DOCKER_CONTAINER_PRE_RELEASE}:/go/src/github.com/Nexenta/go-nexentastor/CHANGELOG.md ./CHANGELOG.md
+	docker cp ${DOCKER_CONTAINER_PRE_RELEASE}:/go/src/github.com/Nexenta/go-nexentastor/docs ./
+	docker rm ${DOCKER_CONTAINER_PRE_RELEASE}
+
+.PHONY: check-env-NEXT_TAG
+check-env-NEXT_TAG:
+ifeq ($(strip ${NEXT_TAG}),)
+	$(error "Error: environment variable NEXT_TAG is not set (e.i. '1.2.3')")
 endif
 
 .PHONY: clean
