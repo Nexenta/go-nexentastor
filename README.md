@@ -43,7 +43,8 @@ Full API documentation for all packages is [here](docs).
         Password: "pass",
         Log:      l,
     })
-    nsProvider, err := nsResolver.Resolve("poolA/datasetA") // returns provider for NS that has "poolA/datasetA"
+    // returns a provider for NS that has "poolA/datasetA"
+    nsProvider, err := nsResolver.Resolve("poolA/datasetA")
     filesystems, err := nsProvider.GetFilesystems("poolA/datasetA/parentFS")
     ```
 
