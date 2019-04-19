@@ -3,23 +3,54 @@
 [![Build Status](https://travis-ci.org/Nexenta/go-nexentastor.svg?branch=master)](https://travis-ci.org/Nexenta/go-nexentastor)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Nexenta/go-nexentastor)](https://goreportcard.com/report/github.com/Nexenta/go-nexentastor)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
-[![Releases](https://img.shields.io/github/tag/nexenta/go-nexentastor.svg)](https://github.com/Nexenta/go-nexentastor/releases)
 
 Go API library for [NexentaStor](https://nexenta.com/products/nexentastor).
 
-## Versions
+## Last version
 
-See [CHANGELOG.md](./CHANGELOG.md)
+[![Releases](https://img.shields.io/github/tag/nexenta/go-nexentastor.svg)](https://github.com/Nexenta/go-nexentastor/releases)
+
+See [CHANGELOG.md](CHANGELOG.md)
 
 ## Documentation
 
 To see docs for a specific version, change Git branch to version tag.
 
-Current version documentation is [here](./docs).
+Full API documentation for all packages is [here](docs).
+
+### Package "[ns](docs/ns.md)"
+- [ns.Provider](docs/ns.md#type-provider) - single NexentaStor API provider.
+    See list of all provider API methods [here](docs/ns.md#type-providerinterface).
+    Example:
+    ```go
+    l := logrus.New()
+    nsProvider, err := ns.NewProvider(ns.ProviderArgs{
+        Address:            "https://10.3.199.252:8443",
+        Username:           "admin",
+        Password:           "pass",
+        Log:                l,
+    })
+    pools, err := nsProvider.GetPools()
+    ```
+- [ns.Resolver](docs/ns.md#type-resolver) - NexentaStor HA cluster API provider.
+    Resolves NexentaStor by specified filesystem path.
+    Example:
+    ```go
+    l := logrus.New()
+    nsResolver, err := ns.NewResolver(ns.ResolverArgs{
+        Address:            "https://10.3.199.252:8443,https://10.3.199.253:8443",
+        Username:           "admin",
+        Password:           "pass",
+        Log:                l,
+    })
+    nsProvider, err := nsResolver.Resolve("poolA/datasetA") // returns provider for NS that has "poolA/datasetA"
+    filesystems, err := nsProvider.GetFilesystems("poolA/datasetA/parentFS")
+    ```
 
 ## Development
 
 Commits should follow [Conventional Commits Spec](https://conventionalcommits.org).
+Commit messages which include `feat:` and `fix:` prefixes will be included in CHANGELOG automatically.
 
 ### Tests
 
