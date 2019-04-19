@@ -25,10 +25,10 @@ Full API documentation for all packages is [here](docs).
     ```go
     l := logrus.New()
     nsProvider, err := ns.NewProvider(ns.ProviderArgs{
-        Address:            "https://10.3.199.252:8443",
-        Username:           "admin",
-        Password:           "pass",
-        Log:                l,
+        Address:  "https://10.3.199.252:8443",
+        Username: "admin",
+        Password: "pass",
+        Log:      l,
     })
     pools, err := nsProvider.GetPools()
     ```
@@ -38,10 +38,10 @@ Full API documentation for all packages is [here](docs).
     ```go
     l := logrus.New()
     nsResolver, err := ns.NewResolver(ns.ResolverArgs{
-        Address:            "https://10.3.199.252:8443,https://10.3.199.253:8443",
-        Username:           "admin",
-        Password:           "pass",
-        Log:                l,
+        Address:  "https://10.3.199.252:8443,https://10.3.199.253:8443",
+        Username: "admin",
+        Password: "pass",
+        Log:      l,
     })
     nsProvider, err := nsResolver.Resolve("poolA/datasetA") // returns provider for NS that has "poolA/datasetA"
     filesystems, err := nsProvider.GetFilesystems("poolA/datasetA/parentFS")
