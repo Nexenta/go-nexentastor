@@ -14,9 +14,9 @@ import (
 const (
 	defaultUsername       = "admin"
 	defaultPassword       = "Nexenta@1"
-	defaultPoolName       = "csiDriverPool"
-	defaultDatasetName    = "csiDriverDataset"
-	defaultFilesystemName = "csiDriverFs"
+	defaultPoolName       = "testPool"
+	defaultDatasetName    = "testDataset"
+	defaultFilesystemName = "testFilesystem"
 )
 
 type config struct {

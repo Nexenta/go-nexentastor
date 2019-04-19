@@ -1,6 +1,6 @@
 pipeline {
     environment {
-        TEST_NS_SINGLE = 'https://10.3.199.252:8443'
+        TEST_NS_SINGLE = 'https://10.3.199.247:8443'
         TEST_NS_HA_1 = 'https://10.3.199.252:8443'
         TEST_NS_HA_2 = 'https://10.3.199.253:8443'
     }
