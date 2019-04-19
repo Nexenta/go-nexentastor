@@ -13,7 +13,7 @@ See [CHANGELOG.md](./CHANGELOG.md)
 
 ## Documentation
 
-To see specific docs for a specific version, change Git branch to this version tag.
+To see docs for a specific version, change Git branch to version tag.
 
 Current version documentation is [here](./docs).
 
