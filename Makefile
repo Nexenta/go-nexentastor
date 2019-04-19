@@ -94,6 +94,7 @@ release:
 
 .PHONY: generate-changelog-and-docs
 generate-changelog-and-docs:
+	@echo "Release tag: ${VERSION}\n"
 	docker build -f ${DOCKER_FILE_PRE_RELEASE} -t ${DOCKER_IMAGE_PRE_RELEASE} --build-arg VERSION=${VERSION} .
 	-docker rm -f ${DOCKER_CONTAINER_PRE_RELEASE}
 	docker create --name ${DOCKER_CONTAINER_PRE_RELEASE} ${DOCKER_IMAGE_PRE_RELEASE}
@@ -104,7 +105,7 @@ generate-changelog-and-docs:
 .PHONY: check-env-VERSION
 check-env-VERSION:
 ifeq ($(strip ${VERSION}),)
-       $(error "Error: environment variable VERSION is not set (e.i. '1.2.3')")
+	$(error "Error: environment variable VERSION is not set (e.i. '1.2.3')")
 endif
 
 .PHONY: clean
