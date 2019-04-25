@@ -499,7 +499,7 @@ func TestProvider_NewProvider(t *testing.T) {
 
 		err = nsp.DestroyFilesystem(c.filesystem, true)
 		if err != nil {
-			t.Errorf("Cannot destory filesystem, even with snapshots=true option: %v", err)
+			t.Errorf("Cannot destroy filesystem, even with snapshots=true option: %v", err)
 			return
 		}
 
@@ -553,7 +553,7 @@ func TestProvider_NewProvider(t *testing.T) {
 
 		err = nsp.DestroyFilesystemWithClones(c.filesystem, true)
 		if err != nil {
-			t.Errorf("Cannot destory filesystem: %v", err)
+			t.Errorf("Cannot destroy filesystem: %v", err)
 			return
 		}
 

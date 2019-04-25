@@ -267,7 +267,7 @@ func (p *Provider) CreateNfsShare(params CreateNfsShareParams) error {
 		Filesystem: params.Filesystem,
 		Anon:       "root",
 		SecurityContexts: []nefNasNfsRequestSecurityContext{
-			nefNasNfsRequestSecurityContext{
+			{
 				SecurityModes: []string{"sys"},
 			},
 		},
