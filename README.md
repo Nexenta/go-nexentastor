@@ -4,9 +4,9 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/Nexenta/go-nexentastor)](https://goreportcard.com/report/github.com/Nexenta/go-nexentastor)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 
-Go API library for [NexentaStor](https://nexenta.com/products/nexentastor).
+Go library for accessing NexentaStor [NexentaStor](https://nexenta.com/products/nexentastor) API.
 
-## Last version
+## Latest version
 
 [![Releases](https://img.shields.io/github/tag/nexenta/go-nexentastor.svg)](https://github.com/Nexenta/go-nexentastor/releases)
 
