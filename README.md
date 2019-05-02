@@ -114,8 +114,8 @@ Each API change MUST be released as git tag (X.X.X).
    - generates new `CHANGELOG.md`
    - generates new `./docs/*`
    - creates git tag 'X.X.X' and pushes it to the repository
-```bash
-VERSION=X.X.X make release
-```
+    ```bash
+    VERSION=X.X.X make release
+    ```
 
 3. Update Github [releases](https://github.com/Nexenta/go-nexentastor/releases).
