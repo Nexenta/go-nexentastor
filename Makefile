@@ -38,8 +38,8 @@ test-unit-container:
 
 .PHONY: test-e2e-ns-single
 test-e2e-ns-single: check-env-TEST_NS_SINGLE
-	go test ./tests/e2e/ns/provider/provider_test.go -v -count 1 --address="${TEST_NS_SINGLE}"
-	go test ./tests/e2e/ns/resolver/resolver_test.go -v -count 1 --address="${TEST_NS_SINGLE}"
+	go test ./tests/e2e/ns/provider/provider_test.go -v -failfast --address="${TEST_NS_SINGLE}"
+	go test ./tests/e2e/ns/resolver/resolver_test.go -v -failfast --address="${TEST_NS_SINGLE}"
 .PHONY: test-e2e-ns-single-container
 test-e2e-ns-single-container: check-env-TEST_NS_SINGLE
 	docker build -f ${DOCKER_FILE_TESTS} -t ${DOCKER_IMAGE_TESTS} .
@@ -49,8 +49,8 @@ test-e2e-ns-single-container: check-env-TEST_NS_SINGLE
 
 .PHONY: test-e2e-ns-cluster
 test-e2e-ns-cluster: check-env-TEST_NS_HA_1 check-env-TEST_NS_HA_2
-	go test ./tests/e2e/ns/provider/provider_test.go -v -count 1 --address="${TEST_NS_HA_1}" --cluster=true
-	go test ./tests/e2e/ns/resolver/resolver_test.go -v -count 1 --address="${TEST_NS_HA_1},${TEST_NS_HA_2}"
+	go test ./tests/e2e/ns/provider/provider_test.go -v -failfast --address="${TEST_NS_HA_1}" --cluster=true
+	go test ./tests/e2e/ns/resolver/resolver_test.go -v -failfast --address="${TEST_NS_HA_1},${TEST_NS_HA_2}"
 .PHONY: test-e2e-ns-cluster-container
 test-e2e-ns-cluster-container: check-env-TEST_NS_HA_1 check-env-TEST_NS_HA_2
 	docker build -f ${DOCKER_FILE_TESTS} -t ${DOCKER_IMAGE_TESTS} .

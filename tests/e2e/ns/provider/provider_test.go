@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 	"testing"
 
@@ -22,14 +23,18 @@ const (
 	defaultFilesystemName = "testFilesystem"
 )
 
+const concurrentProcesses = 20
+
 type config struct {
-	address    string
-	username   string
-	password   string
-	pool       string
-	dataset    string
-	filesystem string
-	cluster    bool
+	address      string
+	username     string
+	password     string
+	pool         string
+	dataset      string
+	filesystem   string
+	smbShareName string
+	snapshotName string
+	cluster      bool
 }
 
 var c *config
@@ -87,13 +92,15 @@ func TestMain(m *testing.M) {
 	}
 
 	c = &config{
-		address:    *address,
-		username:   *username,
-		password:   *password,
-		pool:       *pool,
-		dataset:    fmt.Sprintf("%s/%s", *pool, *dataset),
-		filesystem: fmt.Sprintf("%s/%s/%s", *pool, *dataset, *filesystem),
-		cluster:    *cluster,
+		address:      *address,
+		username:     *username,
+		password:     *password,
+		pool:         *pool,
+		dataset:      fmt.Sprintf("%s/%s", *pool, *dataset),
+		filesystem:   fmt.Sprintf("%s/%s/%s", *pool, *dataset, *filesystem),
+		cluster:      *cluster,
+		smbShareName: "testShareName",
+		snapshotName: "snap-test",
 	}
 
 	os.Exit(m.Run())
@@ -101,6 +108,9 @@ func TestMain(m *testing.M) {
 
 func TestProvider_NewProvider(t *testing.T) {
 	t.Logf("Using NS: %s", c.address)
+
+	testSnapshotPath := fmt.Sprintf("%s@%s", c.filesystem, c.snapshotName)
+	testSnapshotCloneTargetPath := fmt.Sprintf("%s/csiDriverFsCloned", c.dataset)
 
 	nsp, err := ns.NewProvider(ns.ProviderArgs{
 		Address:            c.address,
@@ -116,7 +126,7 @@ func TestProvider_NewProvider(t *testing.T) {
 	t.Run("GetLicense()", func(tt *testing.T) {
 		license, err := nsp.GetLicense()
 		if err != nil {
-			tt.Error(err)
+			t.Error(err)
 		} else if !license.Valid {
 			t.Errorf("License %+v is not valid, on NS %s", license, c.address)
 		} else if license.Expires[0:2] != "20" {
@@ -164,7 +174,7 @@ func TestProvider_NewProvider(t *testing.T) {
 	})
 
 	t.Run("CreateFilesystem()", func(t *testing.T) {
-		nsp.DestroyFilesystemWithClones(c.filesystem, true)
+		destroyFilesystemWithDependents(nsp, c.filesystem)
 
 		err = nsp.CreateFilesystem(ns.CreateFilesystemParams{
 			Path: c.filesystem,
@@ -242,8 +252,7 @@ func TestProvider_NewProvider(t *testing.T) {
 		}
 	})
 
-	testSmbShareName := "testShareName"
-	for _, smbShareName := range []string{testSmbShareName, ""} {
+	for _, smbShareName := range []string{c.smbShareName, ""} {
 		smbShareName := smbShareName
 
 		t.Run(
@@ -355,8 +364,6 @@ func TestProvider_NewProvider(t *testing.T) {
 		}
 	})
 
-	testSnapshotName := "snap-test"
-	testSnapshotPath := fmt.Sprintf("%s@%s", c.filesystem, testSnapshotName)
 	t.Run("CreateSnapshot()", func(t *testing.T) {
 		nsp.DestroyFilesystemWithClones(c.filesystem, true)
 		nsp.CreateFilesystem(ns.CreateFilesystemParams{Path: c.filesystem})
@@ -381,10 +388,10 @@ func TestProvider_NewProvider(t *testing.T) {
 				c.address,
 			)
 			return
-		} else if snapshot.Name != testSnapshotName {
+		} else if snapshot.Name != c.snapshotName {
 			t.Errorf(
 				"New snapshot name expacted to be '%s', but got '%s' (Snapshot: %+v, NS %s)",
-				testSnapshotName,
+				c.snapshotName,
 				snapshot.Name,
 				snapshot,
 				c.address,
@@ -408,7 +415,7 @@ func TestProvider_NewProvider(t *testing.T) {
 		} else if len(snapshots) == 0 {
 			t.Errorf(
 				"New snapshot '%s' was not found in '%s' snapshot list, list is empty: %v",
-				testSnapshotName,
+				c.snapshotName,
 				c.filesystem,
 				snapshots,
 			)
@@ -416,7 +423,7 @@ func TestProvider_NewProvider(t *testing.T) {
 		} else if !snapshotArrayContains(snapshots, testSnapshotPath) {
 			t.Errorf(
 				"New snapshot '%s' was not found in '%s' snapshot list: %v",
-				testSnapshotName,
+				c.snapshotName,
 				c.filesystem,
 				snapshots,
 			)
@@ -424,7 +431,6 @@ func TestProvider_NewProvider(t *testing.T) {
 		}
 	})
 
-	testSnapshotCloneTargetPath := fmt.Sprintf("%s/csiDriverFsCloned", c.dataset)
 	t.Run("CloneSnapshot()", func(t *testing.T) {
 		nsp.DestroySnapshot(testSnapshotPath)
 		nsp.DestroyFilesystemWithClones(c.filesystem, true)
@@ -630,9 +636,221 @@ func TestProvider_NewProvider(t *testing.T) {
 		}
 	})
 
-	t.Run("Clean up filesystems", func(t *testing.T) {
-		nsp.DestroySnapshot(testSnapshotPath)
-		nsp.DestroyFilesystemWithClones(testSnapshotCloneTargetPath, true)
-		nsp.DestroyFilesystemWithClones(c.filesystem, true)
+	t.Run("GetFilesystemsSlice()", func(t *testing.T) {
+		destroyFilesystemWithDependents(nsp, c.filesystem)
+
+		err = nsp.CreateFilesystem(ns.CreateFilesystemParams{
+			Path: c.filesystem,
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		count := 5
+		err = createFilesystemChildren(nsp, c.filesystem, count)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		filesystems, err := nsp.GetFilesystemsSlice(c.filesystem, 0, 0)
+		if err == nil {
+			t.Errorf("should return error when limit is equal 0, but got: %v", err)
+			return
+		}
+
+		filesystems, err = nsp.GetFilesystemsSlice(c.filesystem, 2, 0)
+		if err != nil {
+			t.Error(err)
+			return
+		} else if len(filesystems) != 2 {
+			t.Errorf("GetFilesystems() returned %d filesystems, but expected 2", len(filesystems))
+			return
+		} else if filesystems[0].Path != path.Join(c.filesystem, "child-1") {
+			t.Errorf(
+				"GetFilesystems('%s', 2, 0) first item expected to be '%s' but got: %+v",
+				c.filesystem,
+				path.Join(c.filesystem, "child-1"),
+				filesystems,
+			)
+			return
+		} else if filesystems[1].Path != path.Join(c.filesystem, "child-2") {
+			t.Errorf(
+				"GetFilesystems('%s', 2, 0) second item expected to be '%s' but got: %+v",
+				c.filesystem,
+				path.Join(c.filesystem, "child-2"),
+				filesystems,
+			)
+			return
+		}
+
+		filesystems, err = nsp.GetFilesystemsSlice(c.filesystem, 4, 3)
+		if err != nil {
+			t.Error(err)
+			return
+		} else if len(filesystems) != 3 {
+			t.Errorf("GetFilesystems() returned %d filesystems, but expected 3", len(filesystems))
+			return
+		} else if filesystems[0].Path != path.Join(c.filesystem, "child-3") {
+			t.Errorf(
+				"GetFilesystems('%s', 4, 3) first item expected to be '%s' but got: %+v",
+				c.filesystem,
+				path.Join(c.filesystem, "child-3"),
+				filesystems,
+			)
+			return
+		} else if filesystems[1].Path != path.Join(c.filesystem, "child-4") {
+			t.Errorf(
+				"GetFilesystems('%s', 4, 3) second item expected to be '%s' but got: %+v",
+				c.filesystem,
+				path.Join(c.filesystem, "child-4"),
+				filesystems,
+			)
+			return
+		} else if filesystems[2].Path != path.Join(c.filesystem, "child-5") {
+			t.Errorf(
+				"GetFilesystems('%s', 4, 3) third item expected to be '%s' but got: %+v",
+				c.filesystem,
+				path.Join(c.filesystem, "child-5"),
+				filesystems,
+			)
+			return
+		}
 	})
+
+	t.Run("GetFilesystems() pagination", func(t *testing.T) {
+		if testing.Short() {
+			t.Skip("skipping pagination test in short mode")
+			return
+		}
+
+		destroyFilesystemWithDependents(nsp, c.filesystem)
+
+		err = nsp.CreateFilesystem(ns.CreateFilesystemParams{
+			Path: c.filesystem,
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		count := 101
+		err = createFilesystemChildren(nsp, c.filesystem, count)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		filesystems, err := nsp.GetFilesystems(c.filesystem)
+		if err != nil {
+			t.Error(err)
+			return
+		} else if len(filesystems) != count {
+			t.Errorf("GetFilesystems() returned %d filesystems, but expected %d", len(filesystems), count)
+		}
+
+		for i := 1; i <= len(filesystems); i++ {
+			if !filesystemArrayContains(filesystems, path.Join(c.filesystem, fmt.Sprintf("child-%d", i))) {
+				t.Errorf("filesystem list doesn't contain 'child-%d' filesystem", i)
+			}
+		}
+	})
+
+	// clean up
+	nsp.DestroySnapshot(testSnapshotPath)
+	destroyFilesystemWithDependents(nsp, testSnapshotCloneTargetPath)
+	destroyFilesystemWithDependents(nsp, c.filesystem)
+}
+
+func createFilesystemChildren(nsp ns.ProviderInterface, parent string, count int) error {
+	jobs := make([]func() error, count)
+	for i := 0; i < count; i++ {
+		childPath := path.Join(parent, fmt.Sprintf("child-%d", i+1))
+		jobs[i] = func() error {
+			return nsp.CreateFilesystem(ns.CreateFilesystemParams{Path: childPath})
+		}
+	}
+
+	return runConcurrentJobs("create filesystem", jobs)
+}
+
+func destroyFilesystemWithDependents(nsp ns.ProviderInterface, filesystem string) error {
+	children, err := nsp.GetFilesystems(filesystem)
+	if err != nil {
+		return fmt.Errorf("destroyFilesystemWithDependents(%s): failed to get children: %v", filesystem, err)
+	}
+
+	if len(children) > 0 {
+		jobs := make([]func() error, len(children))
+		for i, c := range children {
+			c := c
+			jobs[i] = func() error {
+				return destroyFilesystemWithDependents(nsp, c.Path)
+			}
+		}
+		err := runConcurrentJobs("delete filesystem", jobs)
+		if err != nil {
+			return fmt.Errorf(
+				"destroyFilesystemWithDependents(%s): failed to remove child filesystems: %s",
+				filesystem,
+				err,
+			)
+		}
+	}
+
+	err = nsp.DestroyFilesystemWithClones(filesystem, true)
+	if err != nil {
+		return fmt.Errorf("destroyFilesystemWithDependents(%s): failed to destroy filesystem: %v", filesystem, err)
+	}
+
+	return nil
+}
+
+func runConcurrentJobs(description string, jobs []func() error) error {
+	count := len(jobs)
+
+	worker := func(jobsPool <-chan func() error, results chan<- error) {
+		for job := range jobsPool {
+			err := job()
+			if err != nil {
+				results <- fmt.Errorf("Job failed: %s: %s", description, err)
+			} else {
+				results <- nil
+			}
+		}
+	}
+
+	jobsPool := make(chan func() error, count)
+	results := make(chan error, count)
+
+	// start workers
+	for i := 0; i < concurrentProcesses; i++ {
+		go worker(jobsPool, results)
+	}
+
+	// schedule jobs
+	for _, job := range jobs {
+		jobsPool <- job
+	}
+	close(jobsPool)
+
+	// collect all results
+	errors := []error{}
+	for i := 0; i < count; i++ {
+		err := <-results
+		if err != nil {
+			errors = append(errors, err)
+		}
+	}
+
+	if len(errors) > 0 {
+		err := ""
+		for _, e := range errors {
+			err += fmt.Sprintf("\n%s;", e)
+		}
+		return fmt.Errorf("%d of %d jobs failed: %s: %s", len(errors), count, description, err)
+	}
+
+	return nil
 }
