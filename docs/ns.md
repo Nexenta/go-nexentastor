@@ -312,6 +312,15 @@ func (p *Provider) GetFilesystems(parent string) ([]Filesystem, error)
 ```
 GetFilesystems returns all NexentaStor filesystems by parent filesystem
 
+#### func (*Provider) GetFilesystemsSlice
+
+```go
+func (p *Provider) GetFilesystemsSlice(parent string, limit, offset int) ([]Filesystem, error)
+```
+GetFilesystemsSlice returns slice of filesystems by parent filesystem with
+specified limit and offset offset - the first record number of collection, that
+would be included in result
+
 #### func (*Provider) GetLicense
 
 ```go
@@ -426,8 +435,9 @@ type ProviderInterface interface {
 	DestroyFilesystemWithClones(path string, destroySnapshots bool) error
 	SetFilesystemACL(path string, aclRuleSet ACLRuleSet) error
 	GetFilesystem(path string) (Filesystem, error)
-	GetFilesystems(parent string) ([]Filesystem, error)
 	GetFilesystemAvailableCapacity(path string) (int64, error)
+	GetFilesystems(parent string) ([]Filesystem, error)
+	GetFilesystemsSlice(parent string, limit, offset int) ([]Filesystem, error)
 
 	// filesystems - nfs share
 	CreateNfsShare(params CreateNfsShareParams) error
