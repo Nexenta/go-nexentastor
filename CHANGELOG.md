@@ -1,4 +1,12 @@
 
+<a name="1.1.0"></a>
+## [1.1.0](https://github.com/Nexenta/go-nexentastor/compare/1.0.1...1.1.0) (2019-07-10)
+
+### Features
+
+* add nefError.IsBadArgNefError() method
+
+
 <a name="1.0.1"></a>
 ## [1.0.1](https://github.com/Nexenta/go-nexentastor/compare/1.0.0...1.0.1) (2019-05-07)
 

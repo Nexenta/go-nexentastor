@@ -29,6 +29,14 @@ func IsAuthNefError(err error) bool
 IsAuthNefError treats an error as NefError and returns true if its code is
 "EAUTH"
 
+#### func  IsBadArgNefError
+
+```go
+func IsBadArgNefError(err error) bool
+```
+IsBadArgNefError treats an error as NefError and returns true if its code is
+"EBADARG"
+
 #### func  IsBusyNefError
 
 ```go
