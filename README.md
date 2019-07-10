@@ -110,12 +110,13 @@ Each API change MUST be released as git tag (X.X.X).
    make test
    ```
 
-2. Release a new version. This script does following:
-   - generates new `CHANGELOG.md`
-   - generates new `./docs/*`
-   - creates git tag 'X.X.X' and pushes it to the repository
+2. To release a new version, run the command:
     ```bash
     VERSION=X.X.X make release
     ```
+    This script does following:
+    - generates new `CHANGELOG.md`
+    - generates new `./docs/*`
+    - creates git tag 'X.X.X' and pushes it to the repository
 
 3. Update Github [releases](https://github.com/Nexenta/go-nexentastor/releases).
