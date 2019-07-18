@@ -1,4 +1,12 @@
 
+<a name="1.2.0"></a>
+## [1.2.0](https://github.com/Nexenta/go-nexentastor/compare/1.1.0...1.2.0) (2019-07-18)
+
+### Features
+
+* add provider.GetFilesystemsWithStartingToken() method
+
+
 <a name="1.1.0"></a>
 ## [1.1.0](https://github.com/Nexenta/go-nexentastor/compare/1.0.1...1.1.0) (2019-07-10)
 

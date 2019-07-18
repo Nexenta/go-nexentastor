@@ -325,9 +325,24 @@ GetFilesystems returns all NexentaStor filesystems by parent filesystem
 ```go
 func (p *Provider) GetFilesystemsSlice(parent string, limit, offset int) ([]Filesystem, error)
 ```
-GetFilesystemsSlice returns slice of filesystems by parent filesystem with
+GetFilesystemsSlice returns a slice of filesystems by parent filesystem with
 specified limit and offset offset - the first record number of collection, that
 would be included in result
+
+#### func (*Provider) GetFilesystemsWithStartingToken
+
+```go
+func (p *Provider) GetFilesystemsWithStartingToken(parent string, startingToken string, limit int) (
+	filesystems []Filesystem,
+	nextToken string,
+	err error,
+)
+```
+GetFilesystemsWithStartingToken returns filesystems by parent filesystem after
+specified starting token parent - parent filesystem's path startingToken - a
+path to a specific filesystem to start AFTER this token limit - the maximum
+count of filesystems to return in the list Function may return nextToken if
+there is more filesystems than limit value
 
 #### func (*Provider) GetLicense
 
@@ -445,6 +460,7 @@ type ProviderInterface interface {
 	GetFilesystem(path string) (Filesystem, error)
 	GetFilesystemAvailableCapacity(path string) (int64, error)
 	GetFilesystems(parent string) ([]Filesystem, error)
+	GetFilesystemsWithStartingToken(parent string, startingToken string, limit int) ([]Filesystem, string, error)
 	GetFilesystemsSlice(parent string, limit, offset int) ([]Filesystem, error)
 
 	// filesystems - nfs share
