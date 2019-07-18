@@ -23,6 +23,7 @@ const (
 	defaultFilesystemName = "testFilesystem"
 )
 
+// count of concurrent REST calls to create filesystems on NS
 const concurrentProcesses = 20
 
 type config struct {
@@ -39,33 +40,6 @@ type config struct {
 
 var c *config
 var l *logrus.Entry
-
-func poolArrayContains(array []ns.Pool, value string) bool {
-	for _, v := range array {
-		if v.Name == value {
-			return true
-		}
-	}
-	return false
-}
-
-func filesystemArrayContains(array []ns.Filesystem, value string) bool {
-	for _, v := range array {
-		if v.Path == value {
-			return true
-		}
-	}
-	return false
-}
-
-func snapshotArrayContains(array []ns.Snapshot, value string) bool {
-	for _, v := range array {
-		if v.Path == value {
-			return true
-		}
-	}
-	return false
-}
 
 func TestMain(m *testing.M) {
 	var (
@@ -107,7 +81,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestProvider_NewProvider(t *testing.T) {
-	t.Logf("Using NS: %s", c.address)
+	t.Logf("Using config:\n---\n%+v\n---", c)
 
 	testSnapshotPath := fmt.Sprintf("%s@%s", c.filesystem, c.snapshotName)
 	testSnapshotCloneTargetPath := fmt.Sprintf("%s/csiDriverFsCloned", c.dataset)
@@ -464,6 +438,8 @@ func TestProvider_NewProvider(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
+
+		//TODO check that snapshots has been actually "migrated" to the promoted filesystem
 	})
 
 	t.Run("DestroySnapshot()", func(t *testing.T) {
@@ -667,19 +643,17 @@ func TestProvider_NewProvider(t *testing.T) {
 		} else if len(filesystems) != 2 {
 			t.Errorf("GetFilesystems() returned %d filesystems, but expected 2", len(filesystems))
 			return
-		} else if filesystems[0].Path != path.Join(c.filesystem, "child-1") {
+		} else if filesystems[0].Path != getFilesystemChildName(c.filesystem, 1) {
 			t.Errorf(
-				"GetFilesystems('%s', 2, 0) first item expected to be '%s' but got: %+v",
-				c.filesystem,
-				path.Join(c.filesystem, "child-1"),
+				"limit: '2', offset: '0' - first item expected to be '%s' but got: %+v",
+				getFilesystemChildName(c.filesystem, 1),
 				filesystems,
 			)
 			return
-		} else if filesystems[1].Path != path.Join(c.filesystem, "child-2") {
+		} else if filesystems[1].Path != getFilesystemChildName(c.filesystem, 2) {
 			t.Errorf(
-				"GetFilesystems('%s', 2, 0) second item expected to be '%s' but got: %+v",
-				c.filesystem,
-				path.Join(c.filesystem, "child-2"),
+				"limit: '2', offset: '0' - second item expected to be '%s' but got: %+v",
+				getFilesystemChildName(c.filesystem, 2),
 				filesystems,
 			)
 			return
@@ -690,29 +664,26 @@ func TestProvider_NewProvider(t *testing.T) {
 			t.Error(err)
 			return
 		} else if len(filesystems) != 3 {
-			t.Errorf("GetFilesystems() returned %d filesystems, but expected 3", len(filesystems))
+			t.Errorf("returned %d filesystems, but expected 3", len(filesystems))
 			return
-		} else if filesystems[0].Path != path.Join(c.filesystem, "child-3") {
+		} else if filesystems[0].Path != getFilesystemChildName(c.filesystem, 3) {
 			t.Errorf(
-				"GetFilesystems('%s', 4, 3) first item expected to be '%s' but got: %+v",
-				c.filesystem,
-				path.Join(c.filesystem, "child-3"),
+				"limit: '4', offset: '3' - first item expected to be '%s' but got: %+v",
+				getFilesystemChildName(c.filesystem, 3),
 				filesystems,
 			)
 			return
-		} else if filesystems[1].Path != path.Join(c.filesystem, "child-4") {
+		} else if filesystems[1].Path != getFilesystemChildName(c.filesystem, 4) {
 			t.Errorf(
-				"GetFilesystems('%s', 4, 3) second item expected to be '%s' but got: %+v",
-				c.filesystem,
-				path.Join(c.filesystem, "child-4"),
+				"limit: '4', offset: '3' - second item expected to be '%s' but got: %+v",
+				getFilesystemChildName(c.filesystem, 4),
 				filesystems,
 			)
 			return
-		} else if filesystems[2].Path != path.Join(c.filesystem, "child-5") {
+		} else if filesystems[2].Path != getFilesystemChildName(c.filesystem, 5) {
 			t.Errorf(
-				"GetFilesystems('%s', 4, 3) third item expected to be '%s' but got: %+v",
-				c.filesystem,
-				path.Join(c.filesystem, "child-5"),
+				"limit: '4', offset: '3' - third item expected to be '%s' but got: %+v",
+				getFilesystemChildName(c.filesystem, 5),
 				filesystems,
 			)
 			return
@@ -727,6 +698,7 @@ func TestProvider_NewProvider(t *testing.T) {
 
 		destroyFilesystemWithDependents(nsp, c.filesystem)
 
+		t.Log("create parent filesystem")
 		err = nsp.CreateFilesystem(ns.CreateFilesystemParams{
 			Path: c.filesystem,
 		})
@@ -736,12 +708,14 @@ func TestProvider_NewProvider(t *testing.T) {
 		}
 
 		count := 101
+		t.Logf("create %d children filesystems", count)
 		err = createFilesystemChildren(nsp, c.filesystem, count)
 		if err != nil {
 			t.Error(err)
 			return
 		}
 
+		t.Log("get all filesystems")
 		filesystems, err := nsp.GetFilesystems(c.filesystem)
 		if err != nil {
 			t.Error(err)
@@ -750,9 +724,104 @@ func TestProvider_NewProvider(t *testing.T) {
 			t.Errorf("GetFilesystems() returned %d filesystems, but expected %d", len(filesystems), count)
 		}
 
+		t.Log("check if all filesystems are in the list")
 		for i := 1; i <= len(filesystems); i++ {
-			if !filesystemArrayContains(filesystems, path.Join(c.filesystem, fmt.Sprintf("child-%d", i))) {
-				t.Errorf("filesystem list doesn't contain 'child-%d' filesystem", i)
+			fs := getFilesystemChildName(c.filesystem, i)
+			if !filesystemArrayContains(filesystems, fs) {
+				t.Errorf("filesystem list doesn't contain '%s' filesystem", fs)
+			}
+		}
+	})
+
+	t.Run("GetFilesystemsWithStartingToken() pagination", func(t *testing.T) {
+		if testing.Short() {
+			t.Skip("skipping pagination test in short mode")
+			return
+		}
+
+		destroyFilesystemWithDependents(nsp, c.filesystem)
+
+		t.Log("create parent filesystem")
+		if err = nsp.CreateFilesystem(ns.CreateFilesystemParams{Path: c.filesystem}); err != nil {
+			t.Error(err)
+			return
+		}
+
+		count := 101
+		t.Logf("create %d children filesystems", count)
+		if err = createFilesystemChildren(nsp, c.filesystem, count); err != nil {
+			t.Error(err)
+			return
+		}
+
+		tokenTests := []struct {
+			Limit             int
+			ExpectedCount     int
+			StartingToken     string
+			ExpectedNextToken string
+		}{
+			{count + 1, count, "", ""},
+			{5, 5, "", getFilesystemChildName(c.filesystem, 5)},
+			{5, 5, getFilesystemChildName(c.filesystem, 5), getFilesystemChildName(c.filesystem, 10)},
+			{10, 10, getFilesystemChildName(c.filesystem, 3), getFilesystemChildName(c.filesystem, 13)},
+			{10, 1, getFilesystemChildName(c.filesystem, 100), ""},
+			{1, 0, "NOT_EXISTING", ""},
+			{0, count, "", ""},
+		}
+
+		for _, v := range tokenTests {
+			f := fmt.Sprintf("startingToken: '%s', limit: '%d'", v.StartingToken, v.Limit)
+			t.Logf("...check %s", f)
+
+			filesystems, nextToken, err := nsp.GetFilesystemsWithStartingToken(c.filesystem, v.StartingToken, v.Limit)
+			if err != nil {
+				t.Error(err)
+				return
+			} else if len(filesystems) != v.ExpectedCount {
+				t.Errorf("%s: returned %d filesystems, but expected %d", f, len(filesystems), v.ExpectedCount)
+				return
+			} else if nextToken != v.ExpectedNextToken {
+				t.Errorf("%s: returned '%s' next token, but expected '%s'", f, nextToken, v.ExpectedNextToken)
+			}
+		}
+
+		t.Log("get all filesystems using tokens")
+		nextToken := ""
+		filesystems := []ns.Filesystem{}
+		for {
+			filesystemsSlice, nt, err := nsp.GetFilesystemsWithStartingToken(c.filesystem, nextToken, 25)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			filesystems = append(filesystems, filesystemsSlice...)
+			if len(filesystems) > count {
+				t.Errorf(
+					"get all filesystems operation is expected to return %d filesystems, but already got %d; Cancel.",
+					count,
+					len(filesystems),
+				)
+				return
+			}
+
+			if nt == "" {
+				break
+			} else {
+				nextToken = nt
+			}
+		}
+
+		if len(filesystems) != count {
+			t.Errorf("get all filesystems operation returned %d filesystems, but expected %d", len(filesystems), count)
+			return
+		}
+
+		t.Log("check if all filesystems are in the list")
+		for i := 1; i <= len(filesystems); i++ {
+			fs := getFilesystemChildName(c.filesystem, i)
+			if !filesystemArrayContains(filesystems, getFilesystemChildName(c.filesystem, i)) {
+				t.Errorf("filesystem list doesn't contain '%s' filesystem", fs)
 			}
 		}
 	})
@@ -763,12 +832,17 @@ func TestProvider_NewProvider(t *testing.T) {
 	destroyFilesystemWithDependents(nsp, c.filesystem)
 }
 
+// getFilesystemChildName("fs", 13) === "fs/child-013"
+func getFilesystemChildName(parent string, id int) string {
+	return path.Join(parent, fmt.Sprintf("child-%03d", id))
+}
+
 func createFilesystemChildren(nsp ns.ProviderInterface, parent string, count int) error {
 	jobs := make([]func() error, count)
 	for i := 0; i < count; i++ {
-		childPath := path.Join(parent, fmt.Sprintf("child-%d", i+1))
+		i := i
 		jobs[i] = func() error {
-			return nsp.CreateFilesystem(ns.CreateFilesystemParams{Path: childPath})
+			return nsp.CreateFilesystem(ns.CreateFilesystemParams{Path: getFilesystemChildName(parent, i+1)})
 		}
 	}
 
@@ -853,4 +927,31 @@ func runConcurrentJobs(description string, jobs []func() error) error {
 	}
 
 	return nil
+}
+
+func poolArrayContains(array []ns.Pool, value string) bool {
+	for _, v := range array {
+		if v.Name == value {
+			return true
+		}
+	}
+	return false
+}
+
+func filesystemArrayContains(array []ns.Filesystem, value string) bool {
+	for _, v := range array {
+		if v.Path == value {
+			return true
+		}
+	}
+	return false
+}
+
+func snapshotArrayContains(array []ns.Snapshot, value string) bool {
+	for _, v := range array {
+		if v.Path == value {
+			return true
+		}
+	}
+	return false
 }
