@@ -103,7 +103,7 @@ To update deps run:
 
 All development happens in `master` branch, when it's time to publish a new version, new git tag should be created.
 
-Each API change MUST be released as git tag (X.X.X).
+Each API change MUST be released as git tag (vX.X.X).
 
 1. Test the new version:
    ```bash
@@ -117,6 +117,6 @@ Each API change MUST be released as git tag (X.X.X).
     This script does following:
     - generates new `CHANGELOG.md`
     - generates new `./docs/*`
-    - creates git tag 'X.X.X' and pushes it to the repository
+    - creates git tag 'vX.X.X' and pushes it to the repository
 
 3. Update Github [releases](https://github.com/Nexenta/go-nexentastor/releases).
