@@ -1,6 +1,6 @@
 
-<a name="2.0.0"></a>
-## [2.0.0](https://github.com/Nexenta/go-nexentastor/compare/v1.2.0...2.0.0) (2019-07-25)
+<a name="v2.0.0"></a>
+## [v2.0.0](https://github.com/Nexenta/go-nexentastor/compare/v1.2.0...v2.0.0) (2019-07-25)
 
 ### Bug Fixes
 
@@ -13,7 +13,7 @@
 ### BREAKING CHANGE
 
 
-`provider.DestroyFilesystemWithClones()` method was removed, use `DestroyFilesystemParams.PromoteMostRecentCloneIfExists` instead.
+`provider.DestroyFilesystemWithClones()` method has been removed, use `DestroyFilesystemParams.PromoteMostRecentCloneIfExists` instead.
 
 
 <a name="v1.2.0"></a>
@@ -47,4 +47,3 @@
 
 * add vendors to versioning
 * initial NS API Go library commit
-
