@@ -45,6 +45,13 @@ func IsBusyNefError(err error) bool
 IsBusyNefError treats an error as NefError and returns true if its code is
 "EBUSY" Example: filesystem cannot be deleted because it has snapshots
 
+#### func  IsNefError
+
+```go
+func IsNefError(err error) bool
+```
+IsNefError - checks if an error is an NefError
+
 #### func  IsNotExistNefError
 
 ```go
@@ -129,6 +136,42 @@ type CreateSnapshotParams struct {
 ```
 
 CreateSnapshotParams - params to create snapshot
+
+#### type DestroyFilesystemParams
+
+```go
+type DestroyFilesystemParams struct {
+	// If set to `true`, then tries to destroy filesystem's snapshots as well.
+	// In case some snapshots have clones, the filesystem cannot be deleted
+	// without deleting all dependent clones, OR promoting one of the clones
+	// to take over the snapshots (see "PromoteMostRecentCloneIfExists" parameter).
+	DestroySnapshots bool
+
+	// If set to `true`, then tries to find the most recent snapshot clone and if found one,
+	// that clone will be promoted to take over all the snapshots from the original filesystem,
+	// then the original filesystem will be destroyed.
+	//
+	// Initial state:
+	//    [fsSource]---+                       // source filesystem
+	//                 |    [snapshot1]        // source filesystem snapshots
+	//                 |    [snapshot2]
+	//                 `--->[snapshot3]<---+
+	//                                     |
+	//    [fsClone1]-----------------------+   // filesystem clone of "snapshot3"
+	//    [fsClone2]-----------------------+   // another filesystem clone of "snapshot3"
+	//
+	// After destroy "fsSource" filesystem call (PromoteMostRecentCloneIfExists=true and DestroySnapshots=true):
+	//    [fsClone1]<----------------------+   // "fsClone1" is still linked to "snapshot3"
+	//    [fsClone2]---+                   |   // "fsClone2" is got promoted to take over snapshots of "fsSource"
+	//                 |    [snapshot1]    |
+	//                 |    [snapshot2]    |
+	//                 `--->[snapshot3]<---+
+	//
+	PromoteMostRecentCloneIfExists bool
+}
+```
+
+DestroyFilesystemParams - filesystem deletion parameters
 
 #### type Filesystem
 
@@ -278,18 +321,10 @@ DeleteSmbShare destroys SMB share by filesystem path
 #### func (*Provider) DestroyFilesystem
 
 ```go
-func (p *Provider) DestroyFilesystem(path string, destroySnapshots bool) error
+func (p *Provider) DestroyFilesystem(path string, params DestroyFilesystemParams) error
 ```
-DestroyFilesystem destroys filesystem by path
-
-#### func (*Provider) DestroyFilesystemWithClones
-
-```go
-func (p *Provider) DestroyFilesystemWithClones(path string, destroySnapshots bool) (err error)
-```
-DestroyFilesystemWithClones destroys filesystem that has or may have clones
-Method promotes filesystem's most recent snapshots and then delete the
-filesystem
+DestroyFilesystem destroys filesystem on NS, may destroy snapshots and promote
+clones (see DestroyFilesystemParams) Path format: 'pool/dataset/filesystem'
 
 #### func (*Provider) DestroySnapshot
 
@@ -454,8 +489,7 @@ type ProviderInterface interface {
 
 	// filesystems
 	CreateFilesystem(params CreateFilesystemParams) error
-	DestroyFilesystem(path string, destroySnapshots bool) error
-	DestroyFilesystemWithClones(path string, destroySnapshots bool) error
+	DestroyFilesystem(path string, params DestroyFilesystemParams) error
 	SetFilesystemACL(path string, aclRuleSet ACLRuleSet) error
 	GetFilesystem(path string) (Filesystem, error)
 	GetFilesystemAvailableCapacity(path string) (int64, error)
