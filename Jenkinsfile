@@ -9,13 +9,13 @@ pipeline {
         string(
             name: 'TEST_NS_HA_1',
             defaultValue: '',
-            description: 'NS HA cluster 1 node API address',
+            description: 'NS HA cluster - 1st node API address',
             trim: true
         )
         string(
             name: 'TEST_NS_HA_2',
             defaultValue: '',
-            description: 'NS HA cluster 2 node API address',
+            description: 'NS HA cluster - 2nd node API address',
             trim: true
         )
     }
@@ -34,6 +34,12 @@ pipeline {
             }
         }
         stage('Tests [e2e-ns-single]') {
+            when {
+                allOf {
+                    expression { params.TEST_NS_SINGLE != '' }
+                    expression { params.TEST_NS_SINGLE != null }
+                }
+            }
             steps {
                 sh """
                     TEST_NS_SINGLE=${params.TEST_NS_SINGLE} \
