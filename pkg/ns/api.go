@@ -383,7 +383,9 @@ func (p *Provider) PromoteFilesystem(path string) error {
 // CreateNfsShareParams - params to create NFS share
 type CreateNfsShareParams struct {
 	// filesystem path w/o leading slash
-	Filesystem string `json:"filesystem"`
+	Filesystem			string 				`json:"filesystem"`
+	ReadWriteList 		[]NfsRuleList		`json:"readWriteList"`
+	ReadOnlyList 		[]NfsRuleList		`json:"readOnlyList"`
 }
 
 // CreateNfsShare creates NFS share on specified filesystem
@@ -396,12 +398,46 @@ func (p *Provider) CreateNfsShare(params CreateNfsShareParams) error {
 		return fmt.Errorf("CreateNfsShareParams.Filesystem is required")
 	}
 
+	defaultEtype := "fqdn"
+	if len(params.ReadWriteList) == 0 {
+		if len(params.ReadOnlyList) == 0 {
+			params.ReadOnlyList = []NfsRuleList{
+				{
+					Entity: "none",
+					Etype: defaultEtype,
+				},
+			}
+			params.ReadWriteList = []NfsRuleList{
+				{
+					Entity: "*",
+					Etype: defaultEtype,
+				},
+			}
+		} else {
+			params.ReadWriteList = []NfsRuleList{
+				{
+					Entity: "none",
+					Etype: defaultEtype,
+				},
+			}
+		}
+	} else if len(params.ReadOnlyList) == 0 {
+		params.ReadOnlyList = []NfsRuleList{
+			{
+				Entity: "none",
+				Etype: defaultEtype,
+			},
+		}
+	}
+
 	data := nefNasNfsRequest{
 		Filesystem: params.Filesystem,
 		Anon:       "root",
 		SecurityContexts: []nefNasNfsRequestSecurityContext{
 			{
 				SecurityModes: []string{"sys"},
+				ReadWriteList: params.ReadWriteList,
+				ReadOnlyList: params.ReadOnlyList,
 			},
 		},
 	}

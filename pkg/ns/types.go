@@ -100,7 +100,15 @@ type nefNasNfsRequest struct {
 	SecurityContexts []nefNasNfsRequestSecurityContext `json:"securityContexts"`
 }
 type nefNasNfsRequestSecurityContext struct {
-	SecurityModes []string `json:"securityModes"`
+	SecurityModes []string 							`json:"securityModes"`
+	ReadWriteList []NfsRuleList						`json:"readWriteList"`
+	ReadOnlyList  []NfsRuleList						`json:"readOnlyList"`
+}
+
+type NfsRuleList struct {
+	Etype 	string 		`json:"etype"`
+	Entity 	string 		`json:"entity"`
+	Mask	int 		`json:"mask"`
 }
 
 type nefNasSmbResponse struct {
