@@ -1,4 +1,20 @@
 
+<a name="v2.2.0"></a>
+## [v2.2.0](https://github.com/Nexenta/go-nexentastor/compare/v2.1.0...v2.2.0) (2020-03-11)
+
+### Features
+
+* added UpdateFilesystem to be able to expand volume
+
+
+<a name="v2.1.0"></a>
+## [v2.1.0](https://github.com/Nexenta/go-nexentastor/compare/v2.0.0...v2.1.0) (2020-03-10)
+
+### Features
+
+* NEX-22162 ability to pass nfs list on volume creation
+
+
 <a name="v2.0.0"></a>
 ## [v2.0.0](https://github.com/Nexenta/go-nexentastor/compare/v1.2.0...v2.0.0) (2019-07-25)
 
@@ -13,7 +29,7 @@
 ### BREAKING CHANGE
 
 
-`provider.DestroyFilesystemWithClones()` method has been removed, use `DestroyFilesystemParams.PromoteMostRecentCloneIfExists` instead.
+`provider.DestroyFilesystemWithClones()` method was removed, use `DestroyFilesystemParams.PromoteMostRecentCloneIfExists` instead.
 
 
 <a name="v1.2.0"></a>
@@ -47,3 +63,4 @@
 
 * add vendors to versioning
 * initial NS API Go library commit
+

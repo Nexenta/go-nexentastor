@@ -83,7 +83,8 @@ const (
 ```go
 type CloneSnapshotParams struct {
 	// filesystem path w/o leading slash
-	TargetPath string `json:"targetPath"`
+	TargetPath          string `json:"targetPath"`
+	ReferencedQuotaSize int64  `json:"referencedQuotaSize,omitempty"`
 }
 ```
 
@@ -107,7 +108,9 @@ CreateFilesystemParams - params to create filesystem
 ```go
 type CreateNfsShareParams struct {
 	// filesystem path w/o leading slash
-	Filesystem string `json:"filesystem"`
+	Filesystem    string        `json:"filesystem"`
+	ReadWriteList []NfsRuleList `json:"readWriteList"`
+	ReadOnlyList  []NfsRuleList `json:"readOnlyList"`
 }
 ```
 
@@ -236,6 +239,17 @@ NefError - nef error format
 ```go
 func (e *NefError) Error() string
 ```
+
+#### type NfsRuleList
+
+```go
+type NfsRuleList struct {
+	Etype  string `json:"etype"`
+	Entity string `json:"entity"`
+	Mask   int    `json:"mask"`
+}
+```
+
 
 #### type Pool
 
@@ -458,6 +472,13 @@ checking UNIX user uid
 func (p *Provider) String() string
 ```
 
+#### func (*Provider) UpdateFilesystem
+
+```go
+func (p *Provider) UpdateFilesystem(volumePath string, params UpdateFilesystemParams) error
+```
+UpdateFilesystem updates filesystem by path
+
 #### type ProviderArgs
 
 ```go
@@ -604,3 +625,14 @@ Snapshot - NexentaStor snapshot
 ```go
 func (snapshot *Snapshot) String() string
 ```
+
+#### type UpdateFilesystemParams
+
+```go
+type UpdateFilesystemParams struct {
+	// filesystem referenced quota size in bytes
+	ReferencedQuotaSize int64 `json:"referencedQuotaSize,omitempty"`
+}
+```
+
+UpdateFilesystemParams - params to update filesystem
