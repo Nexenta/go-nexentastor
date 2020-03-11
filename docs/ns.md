@@ -475,7 +475,7 @@ func (p *Provider) String() string
 #### func (*Provider) UpdateFilesystem
 
 ```go
-func (p *Provider) UpdateFilesystem(volumePath string, params UpdateFilesystemParams) error
+func (p *Provider) UpdateFilesystem(path string, params UpdateFilesystemParams) error
 ```
 UpdateFilesystem updates filesystem by path
 
@@ -510,6 +510,7 @@ type ProviderInterface interface {
 
 	// filesystems
 	CreateFilesystem(params CreateFilesystemParams) error
+	UpdateFilesystem(path string, params UpdateFilesystemParams) error
 	DestroyFilesystem(path string, params DestroyFilesystemParams) error
 	SetFilesystemACL(path string, aclRuleSet ACLRuleSet) error
 	GetFilesystem(path string) (Filesystem, error)
