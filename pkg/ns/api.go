@@ -241,6 +241,22 @@ func (p *Provider) CreateFilesystem(params CreateFilesystemParams) error {
 	return p.sendRequest(http.MethodPost, "/storage/filesystems", params)
 }
 
+// UpdateFilesystemParams - params to update filesystem
+type UpdateFilesystemParams struct {
+	// filesystem referenced quota size in bytes
+	ReferencedQuotaSize int64 `json:"referencedQuotaSize,omitempty"`
+}
+
+// UpdateFilesystem updates filesystem by path
+func (p *Provider) UpdateFilesystem(path string, params UpdateFilesystemParams) error {
+	if path == "" {
+		return fmt.Errorf("Parameter 'path' is required")
+	}
+
+	uri := 	fmt.Sprintf("/storage/filesystems/%s", url.PathEscape(path))
+	return p.sendRequest(http.MethodPut, uri, params)
+}
+
 // DestroyFilesystemParams - filesystem deletion parameters
 type DestroyFilesystemParams struct {
 	// If set to `true`, then tries to destroy filesystem's snapshots as well.
