@@ -32,6 +32,22 @@ type Filesystem struct {
 	BytesUsed      int64  `json:"bytesUsed"`
 }
 
+// VolumeGroup - NexentaStor volumeGroup
+type VolumeGroup struct {
+    Path           string `json:"path"`
+    BytesAvailable int64  `json:"bytesAvailable"`
+    BytesUsed      int64  `json:"bytesUsed"`
+}
+
+// LunMapping - NexentaStor lunmapping
+type LunMapping struct {
+	Id			string `json:"id"`
+	Volume      string `json:"volume"`
+	TargetGroup string `json:"targetGroup"`
+	HostGroup   string `json:"hostGroup"`
+	Lun 		int    `json:"lun"`
+}
+
 func (fs *Filesystem) String() string {
 	return fs.Path
 }
@@ -90,6 +106,14 @@ type nefStorageFilesystemsResponse struct {
 	Data []Filesystem `json:"data"`
 }
 
+type nefStorageVolumeGroupsResponse struct {
+    Data []VolumeGroup `json:"data"`
+}
+
+type nefLunMappingsResponse struct {
+	Data[]LunMapping `json:"data"`
+}
+
 type nefStorageSnapshotsResponse struct {
 	Data []Snapshot `json:"data"`
 }
@@ -109,6 +133,11 @@ type NfsRuleList struct {
 	Etype 	string 		`json:"etype"`
 	Entity 	string 		`json:"entity"`
 	Mask	int 		`json:"mask"`
+}
+
+type Portal struct {
+	Address string `json:"address"`
+	Port 	int    `json:"port"`
 }
 
 type nefNasSmbResponse struct {

@@ -55,6 +55,19 @@ type ProviderInterface interface {
 	GetSnapshots(volumePath string, recursive bool) ([]Snapshot, error)
 	CloneSnapshot(path string, params CloneSnapshotParams) error
 	PromoteFilesystem(path string) error
+
+	// volumes
+	CreateVolume(params CreateVolumeParams) error
+	UpdateVolume(path string, params UpdateVolumeParams) error
+	DestroyVolume(path string, params DestroyVolumeParams) error
+	GetVolumeGroup(path string) error
+
+	// iSCSI
+	CreateLunMapping(params CreateLunMappingParams) error
+	GetLunMapping(path string) (LunMapping, error)
+	DestroyLunMapping(id string) error
+	CreateISCSITarget(params CreateISCSITargetParams) error
+	CreateUpdateTargetGroup(params CreateTargetGroupParams) error
 }
 
 // Provider - NexentaStor API provider

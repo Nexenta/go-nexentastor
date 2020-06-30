@@ -103,6 +103,29 @@ type CreateFilesystemParams struct {
 
 CreateFilesystemParams - params to create filesystem
 
+#### type CreateISCSITargetParams
+
+```go
+type CreateISCSITargetParams struct {
+	Name    string   `json:"name"`
+	Portals []Portal `json:"portals"`
+}
+```
+
+CreateISCSITargetParamas - params to create new iSCSI target
+
+#### type CreateLunMappingParams
+
+```go
+type CreateLunMappingParams struct {
+	HostGroup   string `json:"hostGroup"`
+	Volume      string `json:"volume"`
+	TargetGroup string `json:"targetGroup"`
+}
+```
+
+CreateLunMappingParams - params to create new lun
+
 #### type CreateNfsShareParams
 
 ```go
@@ -140,6 +163,29 @@ type CreateSnapshotParams struct {
 
 CreateSnapshotParams - params to create snapshot
 
+#### type CreateTargetGroupParams
+
+```go
+type CreateTargetGroupParams struct {
+	Name    string   `json:"name"`
+	Members []string `json:"members"`
+}
+```
+
+CreateTargetGroupParams - params to create target group
+
+#### type CreateVolumeParams
+
+```go
+type CreateVolumeParams struct {
+	// volume path w/o leading slash
+	Path       string `json:"path"`
+	VolumeSize int64  `json:"volumeSize"`
+}
+```
+
+CreateVolumeParams - params to create a volume
+
 #### type DestroyFilesystemParams
 
 ```go
@@ -175,6 +221,16 @@ type DestroyFilesystemParams struct {
 ```
 
 DestroyFilesystemParams - filesystem deletion parameters
+
+#### type DestroyVolumeParams
+
+```go
+type DestroyVolumeParams struct {
+	DestroySnapshots               bool
+	PromoteMostRecentCloneIfExists bool
+}
+```
+
 
 #### type Filesystem
 
@@ -223,6 +279,20 @@ type License struct {
 
 License - NexentaStor license
 
+#### type LunMapping
+
+```go
+type LunMapping struct {
+	Id          string `json:"id"`
+	Volume      string `json:"volume"`
+	TargetGroup string `json:"targetGroup"`
+	HostGroup   string `json:"hostGroup"`
+	Lun         int    `json:"lun"`
+}
+```
+
+LunMapping - NexentaStor lunmapping
+
 #### type NefError
 
 ```go
@@ -261,6 +331,16 @@ type Pool struct {
 
 Pool - NS pool
 
+#### type Portal
+
+```go
+type Portal struct {
+	Address string `json:"address"`
+	Port    int    `json:"port"`
+}
+```
+
+
 #### type Provider
 
 ```go
@@ -288,6 +368,20 @@ CloneSnapshot clones snapshot to FS
 func (p *Provider) CreateFilesystem(params CreateFilesystemParams) error
 ```
 CreateFilesystem creates filesystem by path
+
+#### func (*Provider) CreateISCSITarget
+
+```go
+func (p *Provider) CreateISCSITarget(params CreateISCSITargetParams) error
+```
+CreateISCSITarget - create new iSCSI target on NexentaStor
+
+#### func (*Provider) CreateLunMapping
+
+```go
+func (p *Provider) CreateLunMapping(params CreateLunMappingParams) error
+```
+CreateLunMapping - creates lun for given volume
 
 #### func (*Provider) CreateNfsShare
 
@@ -318,6 +412,20 @@ func (p *Provider) CreateSnapshot(params CreateSnapshotParams) error
 ```
 CreateSnapshot creates snapshot by filesystem path
 
+#### func (*Provider) CreateUpdateTargetGroup
+
+```go
+func (p *Provider) CreateUpdateTargetGroup(params CreateTargetGroupParams) error
+```
+CreateUpdateTargetGroup - create new target group on NexentaStor
+
+#### func (*Provider) CreateVolume
+
+```go
+func (p *Provider) CreateVolume(params CreateVolumeParams) error
+```
+CreateVolume creates volume by path and size
+
 #### func (*Provider) DeleteNfsShare
 
 ```go
@@ -340,12 +448,24 @@ func (p *Provider) DestroyFilesystem(path string, params DestroyFilesystemParams
 DestroyFilesystem destroys filesystem on NS, may destroy snapshots and promote
 clones (see DestroyFilesystemParams) Path format: 'pool/dataset/filesystem'
 
+#### func (*Provider) DestroyLunMapping
+
+```go
+func (p *Provider) DestroyLunMapping(id string) error
+```
+
 #### func (*Provider) DestroySnapshot
 
 ```go
 func (p *Provider) DestroySnapshot(path string) error
 ```
 DestroySnapshot destroys snapshot by path
+
+#### func (*Provider) DestroyVolume
+
+```go
+func (p *Provider) DestroyVolume(path string, params DestroyVolumeParams) error
+```
 
 #### func (*Provider) GetFilesystem
 
@@ -400,6 +520,13 @@ func (p *Provider) GetLicense() (license License, err error)
 ```
 GetLicense returns NexentaStor license
 
+#### func (*Provider) GetLunMapping
+
+```go
+func (p *Provider) GetLunMapping(path string) (lunMapping LunMapping, err error)
+```
+GetLunMapping returns NexentaStor lunmapping for a volume
+
 #### func (*Provider) GetPools
 
 ```go
@@ -435,6 +562,13 @@ leading slash (e.g. "p/d/fs@s")
 func (p *Provider) GetSnapshots(volumePath string, recursive bool) ([]Snapshot, error)
 ```
 GetSnapshots returns snapshots by volume path
+
+#### func (*Provider) GetVolumeGroup
+
+```go
+func (p *Provider) GetVolumeGroup(path string) (err error)
+```
+GetVolumeGroup returns NexentaStor volumeGroup by its path
 
 #### func (*Provider) IsJobDone
 
@@ -478,6 +612,13 @@ func (p *Provider) String() string
 func (p *Provider) UpdateFilesystem(path string, params UpdateFilesystemParams) error
 ```
 UpdateFilesystem updates filesystem by path
+
+#### func (*Provider) UpdateVolume
+
+```go
+func (p *Provider) UpdateVolume(path string, params UpdateVolumeParams) error
+```
+UpdateVolume updates volume by path
 
 #### type ProviderArgs
 
@@ -535,6 +676,19 @@ type ProviderInterface interface {
 	GetSnapshots(volumePath string, recursive bool) ([]Snapshot, error)
 	CloneSnapshot(path string, params CloneSnapshotParams) error
 	PromoteFilesystem(path string) error
+
+	// volumes
+	CreateVolume(params CreateVolumeParams) error
+	UpdateVolume(path string, params UpdateVolumeParams) error
+	DestroyVolume(path string, params DestroyVolumeParams) error
+	GetVolumeGroup(path string) error
+
+	// iSCSI
+	CreateLunMapping(params CreateLunMappingParams) error
+	GetLunMapping(path string) (LunMapping, error)
+	DestroyLunMapping(id string) error
+	CreateISCSITarget(params CreateISCSITargetParams) error
+	CreateUpdateTargetGroup(params CreateTargetGroupParams) error
 }
 ```
 
@@ -590,6 +744,13 @@ func (r *Resolver) Resolve(path string) (ProviderInterface, error)
 ```
 Resolve returns one NS from the list of NSs by provided pool/dataset/fs path
 
+#### func (*Resolver) ResolveFromVg
+
+```go
+func (r *Resolver) ResolveFromVg(path string) (ProviderInterface, error)
+```
+Resolve returns one NS from the list of NSs by provided pool/volumeGroup path
+
 #### type ResolverArgs
 
 ```go
@@ -637,3 +798,36 @@ type UpdateFilesystemParams struct {
 ```
 
 UpdateFilesystemParams - params to update filesystem
+
+#### type UpdateTargetGroupParams
+
+```go
+type UpdateTargetGroupParams struct {
+	Members []string `json:"members"`
+}
+```
+
+UpdateTargetGroupParams - params to update existing target group
+
+#### type UpdateVolumeParams
+
+```go
+type UpdateVolumeParams struct {
+	// volume referenced quota size in bytes
+	VolumeSize int64 `json:"volumeSize,omitempty"`
+}
+```
+
+UpdateVolumeParams - params to update volume
+
+#### type VolumeGroup
+
+```go
+type VolumeGroup struct {
+	Path           string `json:"path"`
+	BytesAvailable int64  `json:"bytesAvailable"`
+	BytesUsed      int64  `json:"bytesUsed"`
+}
+```
+
+VolumeGroup - NexentaStor volumeGroup

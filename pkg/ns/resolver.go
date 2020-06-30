@@ -48,6 +48,40 @@ func (r *Resolver) Resolve(path string) (ProviderInterface, error) {
 	return nil, nil
 }
 
+// Resolve returns one NS from the list of NSs by provided pool/volumeGroup path
+func (r *Resolver) ResolveFromVg(path string) (ProviderInterface, error) {
+	l := r.Log.WithField("func", "Resolve()")
+
+	if path == "" {
+		return nil, fmt.Errorf("Resolved was called with empty pool/volumeGroup path")
+	}
+
+	var nefError error
+	var resolvedNS ProviderInterface
+	for _, ns := range r.Nodes {
+		err := ns.GetVolumeGroup(path)
+		if err != nil {
+			nefError = err
+		} else {
+			resolvedNS = ns
+			break
+		}
+	}
+
+	if resolvedNS != nil {
+		l.Debugf("resolve '%s' to '%s'", path, resolvedNS)
+		return resolvedNS, nil
+	}
+
+	if nefError != nil {
+		l.Debugf("error while resolving '%s' to '%s': %s", path, resolvedNS, nefError)
+		return nil, nefError
+	}
+
+	l.Debugf("no NexentaStor(s) found with pool/volumeGroup: '%s'", path)
+	return nil, nil
+}
+
 // IsCluster checks if nodes is a NS cluster
 // For now it simple checks if all nodes return at least one similar cluster name
 func (r *Resolver) IsCluster() (bool, error) {
