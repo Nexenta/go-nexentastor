@@ -1,6 +1,14 @@
 
+<a name="v2.5.1"></a>
+## [v2.5.1](https://github.com/Nexenta/go-nexentastor/compare/v2.5.0...v2.5.1) (2020-07-16)
+
+### Features
+
+* added getVolume interface, changed getVolumeGroup to return vg props
+
+
 <a name="v2.5.0"></a>
-## [v2.5.0](https://github.com/Nexenta/go-nexentastor/compare/v2.4.0...v2.5.0) (0001-01-01)
+## [v2.5.0](https://github.com/Nexenta/go-nexentastor/compare/v2.4.0...v2.5.0) (2020-06-30)
 
 
 <a name="v2.4.0"></a>

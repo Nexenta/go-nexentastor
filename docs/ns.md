@@ -563,10 +563,17 @@ func (p *Provider) GetSnapshots(volumePath string, recursive bool) ([]Snapshot, 
 ```
 GetSnapshots returns snapshots by volume path
 
+#### func (*Provider) GetVolume
+
+```go
+func (p *Provider) GetVolume(path string) (volume Volume, err error)
+```
+GetVolume - returns NexentaStor volume properties
+
 #### func (*Provider) GetVolumeGroup
 
 ```go
-func (p *Provider) GetVolumeGroup(path string) (err error)
+func (p *Provider) GetVolumeGroup(path string) (volumeGroup VolumeGroup, err error)
 ```
 GetVolumeGroup returns NexentaStor volumeGroup by its path
 
@@ -679,9 +686,10 @@ type ProviderInterface interface {
 
 	// volumes
 	CreateVolume(params CreateVolumeParams) error
+	GetVolume(path string) (Volume, error)
 	UpdateVolume(path string, params UpdateVolumeParams) error
 	DestroyVolume(path string, params DestroyVolumeParams) error
-	GetVolumeGroup(path string) error
+	GetVolumeGroup(path string) (VolumeGroup, error)
 
 	// iSCSI
 	CreateLunMapping(params CreateLunMappingParams) error
@@ -819,6 +827,19 @@ type UpdateVolumeParams struct {
 ```
 
 UpdateVolumeParams - params to update volume
+
+#### type Volume
+
+```go
+type Volume struct {
+	Path           string `json:"path"`
+	BytesAvailable int64  `json:"bytesAvailable"`
+	BytesUsed      int64  `json:"bytesUsed"`
+	VolumeSize     int64  `json:"volumeSize"`
+}
+```
+
+Volume - NexentaStor volume
 
 #### type VolumeGroup
 
