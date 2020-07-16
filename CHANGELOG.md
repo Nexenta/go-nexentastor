@@ -1,4 +1,12 @@
 
+<a name="v2.5.2"></a>
+## [v2.5.2](https://github.com/Nexenta/go-nexentastor/compare/v2.5.1...v2.5.2) (2020-07-16)
+
+### Features
+
+* added GetVolumes interface for listing volumes
+
+
 <a name="v2.5.1"></a>
 ## [v2.5.1](https://github.com/Nexenta/go-nexentastor/compare/v2.5.0...v2.5.1) (2020-07-16)
 

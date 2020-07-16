@@ -577,6 +577,22 @@ func (p *Provider) GetVolumeGroup(path string) (volumeGroup VolumeGroup, err err
 ```
 GetVolumeGroup returns NexentaStor volumeGroup by its path
 
+#### func (*Provider) GetVolumes
+
+```go
+func (p *Provider) GetVolumes(parent string) ([]Volume, error)
+```
+GetVolumes returns all NexentaStor volumes by parent volumeGroup
+
+#### func (*Provider) GetVolumesSlice
+
+```go
+func (p *Provider) GetVolumesSlice(parent string, limit, offset int) ([]Volume, error)
+```
+GetVolumesSlice returns a slice of filesystems by parent filesystem with
+specified limit and offset offset - the first record number of collection, that
+would be included in result
+
 #### func (*Provider) IsJobDone
 
 ```go
@@ -687,6 +703,7 @@ type ProviderInterface interface {
 	// volumes
 	CreateVolume(params CreateVolumeParams) error
 	GetVolume(path string) (Volume, error)
+	GetVolumes(parent string) ([]Volume, error)
 	UpdateVolume(path string, params UpdateVolumeParams) error
 	DestroyVolume(path string, params DestroyVolumeParams) error
 	GetVolumeGroup(path string) (VolumeGroup, error)
