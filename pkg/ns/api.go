@@ -117,6 +117,27 @@ func (p *Provider) GetFilesystem(path string) (filesystem Filesystem, err error)
     return response.Data[0], nil
 }
 
+// GetVolumes returns all NexentaStor volumes by parent volumeGroup
+func (p *Provider) GetVolumes(parent string) ([]Volume, error) {
+    volumes := []Volume{}
+
+    offset := 1
+    lastResultCount := nsFilesystemListLimit
+    for lastResultCount >= nsFilesystemListLimit {
+        volumesSlice, err := p.GetVolumesSlice(parent, nsFilesystemListLimit-1, offset)
+        if err != nil {
+            return nil, err
+        }
+        for _, vol := range volumesSlice {
+            volumes = append(volumes, vol)
+        }
+        lastResultCount = len(volumesSlice)
+        offset += lastResultCount
+    }
+
+    return volumes, nil
+}
+
 // GetFilesystems returns all NexentaStor filesystems by parent filesystem
 func (p *Provider) GetFilesystems(parent string) ([]Filesystem, error) {
     filesystems := []Filesystem{}
@@ -220,6 +241,42 @@ func (p *Provider) GetFilesystemsSlice(parent string, limit, offset int) ([]File
     }
 
     return filesystems, nil
+}
+
+// GetVolumesSlice returns a slice of filesystems by parent filesystem with specified limit and offset
+// offset - the first record number of collection, that would be included in result
+func (p *Provider) GetVolumesSlice(parent string, limit, offset int) ([]Volume, error) {
+    if limit <= 0 || limit >= nsFilesystemListLimit {
+        return nil, fmt.Errorf(
+            "GetVolumesSlice(): parameter 'limit' must be greater that 0 and less than %d, got: %d",
+            nsFilesystemListLimit,
+            limit,
+        )
+    } else if offset < 0 {
+        return nil, fmt.Errorf(
+            "GetVolumesSlice(): parameter 'offset' must be greater or equal to 0, got: %d",
+            offset,
+        )
+    }
+
+    uri := p.RestClient.BuildURI("/storage/volumes", map[string]string{
+        "parent": parent,
+        "limit":  fmt.Sprint(limit),
+        "offset": fmt.Sprint(offset),
+    })
+
+    response := nefStorageVolumesResponse{}
+    err := p.sendRequestWithStruct(http.MethodGet, uri, nil, &response)
+    if err != nil {
+        return nil, err
+    }
+
+    volumes := []Volume{}
+    for _, fs := range response.Data {
+        volumes = append(volumes, fs)
+    }
+
+    return volumes, nil
 }
 
 // CreateFilesystemParams - params to create filesystem
@@ -736,9 +793,9 @@ type CreateVolumeParams struct {
 
 // CreateVolume creates volume by path and size
 func (p *Provider) CreateVolume(params CreateVolumeParams) error {
-    if params.Path == "" || params.VolumeSize == 0 {
+    if params.Path == "" {
         return fmt.Errorf(
-            "Parameters 'Volume.Path' and 'Volume.VolumeSize' are required, received %+v", params)
+            "Parameters 'Volume.Path' is required, received %+v", params)
     }
 
     return p.sendRequest(http.MethodPost, "/storage/volumes", params)

@@ -59,6 +59,7 @@ type ProviderInterface interface {
 	// volumes
 	CreateVolume(params CreateVolumeParams) error
 	GetVolume(path string) (Volume, error)
+	GetVolumes(parent string) ([]Volume, error)
 	UpdateVolume(path string, params UpdateVolumeParams) error
 	DestroyVolume(path string, params DestroyVolumeParams) error
 	GetVolumeGroup(path string) (VolumeGroup, error)
