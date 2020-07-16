@@ -58,9 +58,10 @@ type ProviderInterface interface {
 
 	// volumes
 	CreateVolume(params CreateVolumeParams) error
+	GetVolume(path string) (Volume, error)
 	UpdateVolume(path string, params UpdateVolumeParams) error
 	DestroyVolume(path string, params DestroyVolumeParams) error
-	GetVolumeGroup(path string) error
+	GetVolumeGroup(path string) (VolumeGroup, error)
 
 	// iSCSI
 	CreateLunMapping(params CreateLunMappingParams) error

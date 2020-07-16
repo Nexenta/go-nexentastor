@@ -681,28 +681,50 @@ func (p *Provider) IsJobDone(jobID string) (bool, error) {
     return false, err
 }
 
-// GetVolumeGroup returns NexentaStor volumeGroup by its path
-func (p *Provider) GetVolumeGroup(path string) (err error) {
+// GetVolume - returns NexentaStor volume properties
+func (p *Provider) GetVolume(path string) (volume Volume, err error) {
     if path == "" {
-        return fmt.Errorf("Filesystem path is empty")
+        return volume, fmt.Errorf("Volume path is empty")
+    }
+
+    uri := p.RestClient.BuildURI("/storage/volumes", map[string]string{
+        "path":   path,
+    })
+
+    response := nefStorageVolumesResponse{}
+    err = p.sendRequestWithStruct(http.MethodGet, uri, nil, &response)
+    if err != nil {
+        return response.Data[0], err
+    }
+
+    if len(response.Data) == 0 {
+        return volume, &NefError{Code: "ENOENT", Err: fmt.Errorf("VolumeGroup '%s' not found", path)}
+    }
+
+    return response.Data[0], nil
+}
+
+// GetVolumeGroup returns NexentaStor volumeGroup by its path
+func (p *Provider) GetVolumeGroup(path string) (volumeGroup VolumeGroup,err error) {
+    if path == "" {
+        return volumeGroup, fmt.Errorf("VolumeGroup path is empty")
     }
 
     uri := p.RestClient.BuildURI("/storage/volumeGroups", map[string]string{
         "path":   path,
-        // "fields": "path,mountPoint,bytesAvailable,bytesUsed,sharedOverNfs,sharedOverSmb",
     })
 
     response := nefStorageVolumeGroupsResponse{}
     err = p.sendRequestWithStruct(http.MethodGet, uri, nil, &response)
     if err != nil {
-        return err
+        return volumeGroup, err
     }
 
     if len(response.Data) == 0 {
-        return &NefError{Code: "ENOENT", Err: fmt.Errorf("Filesystem '%s' not found", path)}
+        return volumeGroup, &NefError{Code: "ENOENT", Err: fmt.Errorf("VolumeGroup '%s' not found", path)}
     }
 
-    return nil
+    return response.Data[0], nil
 }
 
 // CreateVolumeParams - params to create a volume

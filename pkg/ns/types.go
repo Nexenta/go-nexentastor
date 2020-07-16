@@ -32,6 +32,14 @@ type Filesystem struct {
 	BytesUsed      int64  `json:"bytesUsed"`
 }
 
+// Volume - NexentaStor volume
+type Volume struct {
+	Path 		string `json:"path"`
+	BytesAvailable int64  `json:"bytesAvailable"`
+	BytesUsed      int64  `json:"bytesUsed"`
+	VolumeSize     int64  `json:"volumeSize"`
+}
+
 // VolumeGroup - NexentaStor volumeGroup
 type VolumeGroup struct {
     Path           string `json:"path"`
@@ -104,6 +112,10 @@ type nefStoragePoolsResponse struct {
 
 type nefStorageFilesystemsResponse struct {
 	Data []Filesystem `json:"data"`
+}
+
+type nefStorageVolumesResponse struct {
+    Data []Volume `json:"data"`
 }
 
 type nefStorageVolumeGroupsResponse struct {

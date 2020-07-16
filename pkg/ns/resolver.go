@@ -59,7 +59,7 @@ func (r *Resolver) ResolveFromVg(path string) (ProviderInterface, error) {
 	var nefError error
 	var resolvedNS ProviderInterface
 	for _, ns := range r.Nodes {
-		err := ns.GetVolumeGroup(path)
+		_, err := ns.GetVolumeGroup(path)
 		if err != nil {
 			nefError = err
 		} else {
