@@ -121,7 +121,7 @@ func (p *Provider) GetFilesystem(path string) (filesystem Filesystem, err error)
 func (p *Provider) GetVolumes(parent string) ([]Volume, error) {
     volumes := []Volume{}
 
-    offset := 1
+    offset := 0
     lastResultCount := nsFilesystemListLimit
     for lastResultCount >= nsFilesystemListLimit {
         volumesSlice, err := p.GetVolumesSlice(parent, nsFilesystemListLimit-1, offset)
