@@ -1,4 +1,12 @@
 
+<a name="v2.5.3"></a>
+## [v2.5.3](https://github.com/Nexenta/go-nexentastor/compare/v2.5.2...v2.5.3) (2020-07-17)
+
+### Bug Fixes
+
+* changed base offset to 0 for getVolumes
+
+
 <a name="v2.5.2"></a>
 ## [v2.5.2](https://github.com/Nexenta/go-nexentastor/compare/v2.5.1...v2.5.2) (2020-07-16)
 
