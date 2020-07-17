@@ -117,6 +117,51 @@ func (p *Provider) GetFilesystem(path string) (filesystem Filesystem, err error)
     return response.Data[0], nil
 }
 
+// GetVolumesWithStartingToken returns filesystems by parent filesystem after specified starting token
+// parent - parent filesystem's path
+// startingToken - a path to a specific filesystem to start AFTER this token
+// limit - the maximum count of filesystems to return in the list
+// Function may return nextToken if there is more filesystems than limit value
+func (p *Provider) GetVolumesWithStartingToken(parent string, startingToken string, limit int) (
+    volumes []Volume,
+    nextToken string,
+    err error,
+) {
+    startingTokenFound := false
+    if startingToken == "" {
+        // if no startingToken set then filesystem list should starts with the first one
+        startingTokenFound = true
+    }
+
+    // if no limit set then all filesystem after startingToken should be in the response
+    noLimit := limit == 0
+
+    // load volumes using slice requests
+    offset := 0
+    lastResultCount := nsFilesystemListLimit
+    for (noLimit || len(volumes) < limit) && lastResultCount >= nsFilesystemListLimit {
+        volumesSlice, err := p.GetVolumesSlice(parent, nsFilesystemListLimit, offset)
+        if err != nil {
+            return nil, "", err
+        }
+        for _, fs := range volumesSlice {
+            if startingTokenFound {
+                volumes = append(volumes, fs)
+                if len(volumes) == limit {
+                    nextToken = fs.Path
+                    break
+                }
+            } else if fs.Path == startingToken {
+                startingTokenFound = true
+            }
+        }
+        lastResultCount = len(volumesSlice)
+        offset += lastResultCount
+    }
+
+    return volumes, nextToken, nil
+}
+
 // GetVolumes returns all NexentaStor volumes by parent volumeGroup
 func (p *Provider) GetVolumes(parent string) ([]Volume, error) {
     volumes := []Volume{}
