@@ -1,4 +1,12 @@
 
+<a name="v2.5.4"></a>
+## [v2.5.4](https://github.com/Nexenta/go-nexentastor/compare/v2.5.3...v2.5.4) (2020-07-17)
+
+### Features
+
+* implemented GetVolumesWithStartingToken
+
+
 <a name="v2.5.3"></a>
 ## [v2.5.3](https://github.com/Nexenta/go-nexentastor/compare/v2.5.2...v2.5.3) (2020-07-17)
 

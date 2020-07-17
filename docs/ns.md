@@ -593,6 +593,21 @@ GetVolumesSlice returns a slice of filesystems by parent filesystem with
 specified limit and offset offset - the first record number of collection, that
 would be included in result
 
+#### func (*Provider) GetVolumesWithStartingToken
+
+```go
+func (p *Provider) GetVolumesWithStartingToken(parent string, startingToken string, limit int) (
+	volumes []Volume,
+	nextToken string,
+	err error,
+)
+```
+GetVolumesWithStartingToken returns filesystems by parent filesystem after
+specified starting token parent - parent filesystem's path startingToken - a
+path to a specific filesystem to start AFTER this token limit - the maximum
+count of filesystems to return in the list Function may return nextToken if
+there is more filesystems than limit value
+
 #### func (*Provider) IsJobDone
 
 ```go
@@ -707,6 +722,7 @@ type ProviderInterface interface {
 	UpdateVolume(path string, params UpdateVolumeParams) error
 	DestroyVolume(path string, params DestroyVolumeParams) error
 	GetVolumeGroup(path string) (VolumeGroup, error)
+	GetVolumesWithStartingToken(parent string, startingToken string, limit int) ([]Volume, string, error)
 
 	// iSCSI
 	CreateLunMapping(params CreateLunMappingParams) error
