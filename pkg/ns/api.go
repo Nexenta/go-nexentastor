@@ -117,11 +117,11 @@ func (p *Provider) GetFilesystem(path string) (filesystem Filesystem, err error)
     return response.Data[0], nil
 }
 
-// GetVolumesWithStartingToken returns filesystems by parent filesystem after specified starting token
-// parent - parent filesystem's path
-// startingToken - a path to a specific filesystem to start AFTER this token
-// limit - the maximum count of filesystems to return in the list
-// Function may return nextToken if there is more filesystems than limit value
+// GetVolumesWithStartingToken returns volumes by parent volumeGroup after specified starting token
+// parent - parent volumeGroup's path
+// startingToken - a path to a specific volume to start AFTER this token
+// limit - the maximum count of volumes to return in the list
+// Function may return nextToken if there is more volumes than limit value
 func (p *Provider) GetVolumesWithStartingToken(parent string, startingToken string, limit int) (
     volumes []Volume,
     nextToken string,
@@ -137,10 +137,10 @@ func (p *Provider) GetVolumesWithStartingToken(parent string, startingToken stri
     noLimit := limit == 0
 
     // load volumes using slice requests
-    offset := 0
+    offset := 1
     lastResultCount := nsFilesystemListLimit
     for (noLimit || len(volumes) < limit) && lastResultCount >= nsFilesystemListLimit {
-        volumesSlice, err := p.GetVolumesSlice(parent, nsFilesystemListLimit, offset)
+        volumesSlice, err := p.GetVolumesSlice(parent, nsFilesystemListLimit-1, offset)
         if err != nil {
             return nil, "", err
         }
@@ -288,7 +288,7 @@ func (p *Provider) GetFilesystemsSlice(parent string, limit, offset int) ([]File
     return filesystems, nil
 }
 
-// GetVolumesSlice returns a slice of filesystems by parent filesystem with specified limit and offset
+// GetVolumesSlice returns a slice of volumes by parent volumeGroup with specified limit and offset
 // offset - the first record number of collection, that would be included in result
 func (p *Provider) GetVolumesSlice(parent string, limit, offset int) ([]Volume, error) {
     if limit <= 0 || limit >= nsFilesystemListLimit {
