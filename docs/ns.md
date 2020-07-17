@@ -589,9 +589,9 @@ GetVolumes returns all NexentaStor volumes by parent volumeGroup
 ```go
 func (p *Provider) GetVolumesSlice(parent string, limit, offset int) ([]Volume, error)
 ```
-GetVolumesSlice returns a slice of filesystems by parent filesystem with
-specified limit and offset offset - the first record number of collection, that
-would be included in result
+GetVolumesSlice returns a slice of volumes by parent volumeGroup with specified
+limit and offset offset - the first record number of collection, that would be
+included in result
 
 #### func (*Provider) GetVolumesWithStartingToken
 
@@ -602,11 +602,11 @@ func (p *Provider) GetVolumesWithStartingToken(parent string, startingToken stri
 	err error,
 )
 ```
-GetVolumesWithStartingToken returns filesystems by parent filesystem after
-specified starting token parent - parent filesystem's path startingToken - a
-path to a specific filesystem to start AFTER this token limit - the maximum
-count of filesystems to return in the list Function may return nextToken if
-there is more filesystems than limit value
+GetVolumesWithStartingToken returns volumes by parent volumeGroup after
+specified starting token parent - parent volumeGroup's path startingToken - a
+path to a specific volume to start AFTER this token limit - the maximum count of
+volumes to return in the list Function may return nextToken if there is more
+volumes than limit value
 
 #### func (*Provider) IsJobDone
 

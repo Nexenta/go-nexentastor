@@ -137,7 +137,7 @@ func (p *Provider) GetVolumesWithStartingToken(parent string, startingToken stri
     noLimit := limit == 0
 
     // load volumes using slice requests
-    offset := 1
+    offset := 0
     lastResultCount := nsFilesystemListLimit
     for (noLimit || len(volumes) < limit) && lastResultCount >= nsFilesystemListLimit {
         volumesSlice, err := p.GetVolumesSlice(parent, nsFilesystemListLimit-1, offset)
