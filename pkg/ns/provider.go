@@ -71,6 +71,9 @@ type ProviderInterface interface {
 	DestroyLunMapping(id string) error
 	CreateISCSITarget(params CreateISCSITargetParams) error
 	CreateUpdateTargetGroup(params CreateTargetGroupParams) error
+	CreateHostGroup(params CreateHostGroupParams) error
+	GetHostGroups() ([]nefHostGroup, error)
+	UpdateHostGroup(path string, params UpdateHostGroupParams) error
 }
 
 // Provider - NexentaStor API provider

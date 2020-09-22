@@ -174,3 +174,12 @@ type nefJobStatusResponseLink struct {
 	Rel  string `json:"rel"`
 	Href string `json:"href"`
 }
+
+type nefHostGroup struct {
+	Members 	[]string  `json:"members"`
+	Name 		string 	  `json:"name"`
+}
+
+type nefHostGroupsResponse struct {
+	Data 	[]nefHostGroup  `json:"data"`
+}

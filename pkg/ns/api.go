@@ -992,3 +992,44 @@ func (p *Provider) destroyVolume(path string, destroySnapshots bool) error {
 
     return p.sendRequest(http.MethodDelete, uri, nil)
 }
+
+// CreateHostGroupParams - params to create a hostGroup
+type CreateHostGroupParams struct {
+    // list of IQNs for the hostGroup
+    Members []string `json:"members"`
+    // a unique name for the hostGroup
+    Name string `json:"name"`
+}
+
+func (p *Provider) CreateHostGroup(params CreateHostGroupParams) error {
+    if params.Name == "" || len(params.Members) == 0 {
+        return fmt.Errorf("HostGroup name and members cannot be empty, got %+v", params)
+    }
+
+    return p.sendRequest(http.MethodPost, "/san/hostgroups", params)
+}
+
+func (p *Provider) GetHostGroups() (hostGroups []nefHostGroup, err error) {
+    response := nefHostGroupsResponse{}
+    err = p.sendRequestWithStruct(http.MethodGet, "/san/hostgroups", nil, &response)
+    if err != nil {
+        return hostGroups, err
+    }
+
+    return response.Data, nil
+}
+
+// UpdateHostGroupParams - params to update a hostGroup
+type UpdateHostGroupParams struct {
+    // list of IQNs for the hostGroup
+    Members []string `json:"members"`
+}
+
+func (p *Provider) UpdateHostGroup(path string, params UpdateHostGroupParams) error {
+    if path == "" {
+        return fmt.Errorf("Parameter 'path' is required to update hostGroup")
+    }
+
+    uri :=  fmt.Sprintf("/storage/hostgroups/%s", url.PathEscape(path))
+    return p.sendRequest(http.MethodPut, uri, params)
+}
