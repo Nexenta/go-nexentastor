@@ -1006,7 +1006,11 @@ func (p *Provider) CreateHostGroup(params CreateHostGroupParams) error {
         return fmt.Errorf("HostGroup name and members cannot be empty, got %+v", params)
     }
 
-    return p.sendRequest(http.MethodPost, "/san/hostgroups", params)
+    err := p.sendRequest(http.MethodPost, "/san/hostgroups", params)
+    if !IsAlreadyExistNefError(err) {
+        return err
+    }
+    return nil
 }
 
 func (p *Provider) GetHostGroups() (hostGroups []nefHostGroup, err error) {
