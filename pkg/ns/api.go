@@ -862,6 +862,36 @@ func (p *Provider) UpdateVolume(path string, params UpdateVolumeParams) error {
     return p.sendRequest(http.MethodPut, uri, params)
 }
 
+type GetLunMappingsParams struct {
+    TargetGroup string  `json:"targetGroup,omitempty"`
+    Volume      string  `json:"volume,omitempty"`
+    HostGroup   string  `json:"hostGroup,omitempty"`
+}
+
+// GetLunMappings returns NexentaStor lunmappings for given parameters
+func (p *Provider) GetLunMappings(params GetLunMappingsParams) (lunMappings []LunMapping, err error) {
+    reqParams := map[string]string{
+        "fields": "id,volume,targetGroup,hostGroup,lun",
+    }
+    if params.TargetGroup != "" {
+        reqParams["targetGroup"] = params.TargetGroup
+    }
+    if params.Volume != "" {
+        reqParams["volume"] = params.Volume
+    }
+    if params.HostGroup != "" {
+        reqParams["hostGroup"] = params.HostGroup
+    }
+    uri := p.RestClient.BuildURI("/san/lunMappings", reqParams)
+    response := nefLunMappingsResponse{}
+    err = p.sendRequestWithStruct(http.MethodGet, uri, nil, &response)
+    if err != nil {
+        return lunMappings, err
+    }
+
+    return response.Data, nil
+}
+
 // GetLunMapping returns NexentaStor lunmapping for a volume
 func (p *Provider) GetLunMapping(path string) (lunMapping LunMapping, err error) {
     if path == "" {
@@ -899,6 +929,17 @@ func (p *Provider) CreateISCSITarget (params CreateISCSITargetParams) error {
         return err
     }
     return nil
+}
+
+// GetTargetGroups - returns the list of targetGroups on NexentaStor
+func (p* Provider) GetTargetGroups() ([]TargetGroup, error) {
+    response := nefTargetGroupsResponse{}
+    err := p.sendRequestWithStruct(http.MethodGet, "/san/targetgroups", nil, &response)
+    if err != nil {
+        return nil, err
+    }
+
+    return response.Data, nil
 }
 
 // CreateTargetGroupParams - params to create target group
@@ -1006,7 +1047,11 @@ func (p *Provider) CreateHostGroup(params CreateHostGroupParams) error {
         return fmt.Errorf("HostGroup name and members cannot be empty, got %+v", params)
     }
 
-    return p.sendRequest(http.MethodPost, "/san/hostgroups", params)
+    err := p.sendRequest(http.MethodPost, "/san/hostgroups", params)
+    if !IsAlreadyExistNefError(err) {
+        return err
+    }
+    return nil
 }
 
 func (p *Provider) GetHostGroups() (hostGroups []nefHostGroup, err error) {

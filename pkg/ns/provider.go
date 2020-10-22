@@ -70,6 +70,7 @@ type ProviderInterface interface {
 	GetLunMapping(path string) (LunMapping, error)
 	DestroyLunMapping(id string) error
 	CreateISCSITarget(params CreateISCSITargetParams) error
+	GetTargetGroups() ([]TargetGroup, error)
 	CreateUpdateTargetGroup(params CreateTargetGroupParams) error
 	CreateHostGroup(params CreateHostGroupParams) error
 	GetHostGroups() ([]nefHostGroup, error)

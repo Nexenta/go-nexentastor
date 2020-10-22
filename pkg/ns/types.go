@@ -95,6 +95,11 @@ type Pool struct {
 	Name string `json:"poolName"`
 }
 
+type TargetGroup struct {
+	Name string 	`json:"poolName"`
+	Memebers string `json:"members"`
+}
+
 // NEF request/response types
 
 type nefAuthLoginRequest struct {
@@ -182,4 +187,8 @@ type nefHostGroup struct {
 
 type nefHostGroupsResponse struct {
 	Data 	[]nefHostGroup  `json:"data"`
+}
+
+type nefTargetGroupsResponse struct {
+	Data 	[]TargetGroup  `json:"data"`
 }

@@ -1,6 +1,34 @@
 
+<a name="v2.5.63"></a>
+## [v2.5.63](https://github.com/Nexenta/go-nexentastor/compare/v2.5.62...v2.5.63) (2020-09-29)
+
+### Pull Requests
+
+* Merge pull request [#2](https://github.com/Nexenta/go-nexentastor/issues/2) from Nexenta/host_groups
+
+
+<a name="v2.5.62"></a>
+## [v2.5.62](https://github.com/Nexenta/go-nexentastor/compare/v2.5.6.1...v2.5.62) (2020-09-22)
+
+### Bug Fixes
+
+* ignore EEXIST on hostGroup creation
+
+
+<a name="v2.5.6.1"></a>
+## [v2.5.6.1](https://github.com/Nexenta/go-nexentastor/compare/v2.5.61...v2.5.6.1) (2020-09-22)
+
+
+<a name="v2.5.61"></a>
+## [v2.5.61](https://github.com/Nexenta/go-nexentastor/compare/v2.5.5...v2.5.61) (2020-09-22)
+
+
 <a name="v2.5.5"></a>
-## [v2.5.5](https://github.com/Nexenta/go-nexentastor/compare/v2.5.4...v2.5.5) (2020-07-17)
+## [v2.5.5](https://github.com/Nexenta/go-nexentastor/compare/v2.5.6...v2.5.5) (2020-07-17)
+
+
+<a name="v2.5.6"></a>
+## [v2.5.6](https://github.com/Nexenta/go-nexentastor/compare/v2.5.4...v2.5.6) (2020-07-17)
 
 ### Bug Fixes
 

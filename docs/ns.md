@@ -103,6 +103,19 @@ type CreateFilesystemParams struct {
 
 CreateFilesystemParams - params to create filesystem
 
+#### type CreateHostGroupParams
+
+```go
+type CreateHostGroupParams struct {
+	// list of IQNs for the hostGroup
+	Members []string `json:"members"`
+	// a unique name for the hostGroup
+	Name string `json:"name"`
+}
+```
+
+CreateHostGroupParams - params to create a hostGroup
+
 #### type CreateISCSITargetParams
 
 ```go
@@ -268,6 +281,17 @@ GetReferencedQuotaSize - get total referenced quota size
 func (fs *Filesystem) String() string
 ```
 
+#### type GetLunMappingsParams
+
+```go
+type GetLunMappingsParams struct {
+	TargetGroup string `json:"targetGroup,omitempty"`
+	Volume      string `json:"volume,omitempty"`
+	HostGroup   string `json:"hostGroup,omitempty"`
+}
+```
+
+
 #### type License
 
 ```go
@@ -368,6 +392,12 @@ CloneSnapshot clones snapshot to FS
 func (p *Provider) CreateFilesystem(params CreateFilesystemParams) error
 ```
 CreateFilesystem creates filesystem by path
+
+#### func (*Provider) CreateHostGroup
+
+```go
+func (p *Provider) CreateHostGroup(params CreateHostGroupParams) error
+```
 
 #### func (*Provider) CreateISCSITarget
 
@@ -513,6 +543,12 @@ path to a specific filesystem to start AFTER this token limit - the maximum
 count of filesystems to return in the list Function may return nextToken if
 there is more filesystems than limit value
 
+#### func (*Provider) GetHostGroups
+
+```go
+func (p *Provider) GetHostGroups() (hostGroups []nefHostGroup, err error)
+```
+
 #### func (*Provider) GetLicense
 
 ```go
@@ -526,6 +562,13 @@ GetLicense returns NexentaStor license
 func (p *Provider) GetLunMapping(path string) (lunMapping LunMapping, err error)
 ```
 GetLunMapping returns NexentaStor lunmapping for a volume
+
+#### func (*Provider) GetLunMappings
+
+```go
+func (p *Provider) GetLunMappings(params GetLunMappingsParams) (lunMappings []LunMapping, err error)
+```
+GetLunMappings returns NexentaStor lunmappings for given parameters
 
 #### func (*Provider) GetPools
 
@@ -562,6 +605,13 @@ leading slash (e.g. "p/d/fs@s")
 func (p *Provider) GetSnapshots(volumePath string, recursive bool) ([]Snapshot, error)
 ```
 GetSnapshots returns snapshots by volume path
+
+#### func (*Provider) GetTargetGroups
+
+```go
+func (p *Provider) GetTargetGroups() ([]TargetGroup, error)
+```
+GetTargetGroups - returns the list of targetGroups on NexentaStor
 
 #### func (*Provider) GetVolume
 
@@ -651,6 +701,12 @@ func (p *Provider) UpdateFilesystem(path string, params UpdateFilesystemParams) 
 ```
 UpdateFilesystem updates filesystem by path
 
+#### func (*Provider) UpdateHostGroup
+
+```go
+func (p *Provider) UpdateHostGroup(path string, params UpdateHostGroupParams) error
+```
+
 #### func (*Provider) UpdateVolume
 
 ```go
@@ -729,7 +785,11 @@ type ProviderInterface interface {
 	GetLunMapping(path string) (LunMapping, error)
 	DestroyLunMapping(id string) error
 	CreateISCSITarget(params CreateISCSITargetParams) error
+	GetTargetGroups() ([]TargetGroup, error)
 	CreateUpdateTargetGroup(params CreateTargetGroupParams) error
+	CreateHostGroup(params CreateHostGroupParams) error
+	GetHostGroups() ([]nefHostGroup, error)
+	UpdateHostGroup(path string, params UpdateHostGroupParams) error
 }
 ```
 
@@ -829,6 +889,16 @@ Snapshot - NexentaStor snapshot
 func (snapshot *Snapshot) String() string
 ```
 
+#### type TargetGroup
+
+```go
+type TargetGroup struct {
+	Name     string `json:"poolName"`
+	Memebers string `json:"members"`
+}
+```
+
+
 #### type UpdateFilesystemParams
 
 ```go
@@ -839,6 +909,17 @@ type UpdateFilesystemParams struct {
 ```
 
 UpdateFilesystemParams - params to update filesystem
+
+#### type UpdateHostGroupParams
+
+```go
+type UpdateHostGroupParams struct {
+	// list of IQNs for the hostGroup
+	Members []string `json:"members"`
+}
+```
+
+UpdateHostGroupParams - params to update a hostGroup
 
 #### type UpdateTargetGroupParams
 
