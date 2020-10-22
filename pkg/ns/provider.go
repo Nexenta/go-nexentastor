@@ -68,6 +68,7 @@ type ProviderInterface interface {
 	// iSCSI
 	CreateLunMapping(params CreateLunMappingParams) error
 	GetLunMapping(path string) (LunMapping, error)
+	GetLunMappings(params GetLunMappingsParams) (lunMappings []LunMapping, err error)
 	DestroyLunMapping(id string) error
 	CreateISCSITarget(params CreateISCSITargetParams) error
 	GetTargetGroups() ([]TargetGroup, error)
