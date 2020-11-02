@@ -96,8 +96,8 @@ type Pool struct {
 }
 
 type TargetGroup struct {
-	Name string 	`json:"poolName"`
-	Memebers string `json:"members"`
+	Name string 		`json:"poolName"`
+	Members []string 	`json:"members"`
 }
 
 // NEF request/response types

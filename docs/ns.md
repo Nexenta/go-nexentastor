@@ -606,6 +606,13 @@ func (p *Provider) GetSnapshots(volumePath string, recursive bool) ([]Snapshot, 
 ```
 GetSnapshots returns snapshots by volume path
 
+#### func (*Provider) GetTargetGroup
+
+```go
+func (p *Provider) GetTargetGroup(name string) (targetGroup TargetGroup, err error)
+```
+GetTargetGroup returns TargetGroup by its name
+
 #### func (*Provider) GetTargetGroups
 
 ```go
@@ -787,6 +794,7 @@ type ProviderInterface interface {
 	DestroyLunMapping(id string) error
 	CreateISCSITarget(params CreateISCSITargetParams) error
 	GetTargetGroups() ([]TargetGroup, error)
+	GetTargetGroup(name string) (targetGroup TargetGroup, err error)
 	CreateUpdateTargetGroup(params CreateTargetGroupParams) error
 	CreateHostGroup(params CreateHostGroupParams) error
 	GetHostGroups() ([]nefHostGroup, error)
@@ -894,8 +902,8 @@ func (snapshot *Snapshot) String() string
 
 ```go
 type TargetGroup struct {
-	Name     string `json:"poolName"`
-	Memebers string `json:"members"`
+	Name    string   `json:"poolName"`
+	Members []string `json:"members"`
 }
 ```
 

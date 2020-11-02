@@ -942,6 +942,21 @@ func (p* Provider) GetTargetGroups() ([]TargetGroup, error) {
     return response.Data, nil
 }
 
+// GetTargetGroup returns TargetGroup by its name
+func (p *Provider) GetTargetGroup(name string) (targetGroup TargetGroup, err error) {
+    if name == "" {
+        return targetGroup, fmt.Errorf("targetGroup name is empty")
+    }
+
+    uri := p.RestClient.BuildURI(fmt.Sprintf("/storage/targetgroups/%s", url.PathEscape(name)), map[string]string{
+        "fields": "name,members",
+    })
+
+    err = p.sendRequestWithStruct(http.MethodGet, uri, nil, &targetGroup)
+
+    return targetGroup, err
+}
+
 // CreateTargetGroupParams - params to create target group
 type CreateTargetGroupParams struct {
     Name       string    `json:"name"`
