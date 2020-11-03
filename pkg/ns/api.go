@@ -948,7 +948,7 @@ func (p *Provider) GetTargetGroup(name string) (targetGroup TargetGroup, err err
         return targetGroup, fmt.Errorf("targetGroup name is empty")
     }
 
-    uri := p.RestClient.BuildURI(fmt.Sprintf("/storage/targetgroups/%s", url.PathEscape(name)), map[string]string{
+    uri := p.RestClient.BuildURI(fmt.Sprintf("/san/targetgroups/%s", url.PathEscape(name)), map[string]string{
         "fields": "name,members",
     })
 
