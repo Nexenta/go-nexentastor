@@ -64,6 +64,7 @@ type ProviderInterface interface {
 	DestroyVolume(path string, params DestroyVolumeParams) error
 	GetVolumeGroup(path string) (VolumeGroup, error)
 	GetVolumesWithStartingToken(parent string, startingToken string, limit int) ([]Volume, string, error)
+	PromoteVolume(path string) error
 
 	// iSCSI
 	CreateLunMapping(params CreateLunMappingParams) error

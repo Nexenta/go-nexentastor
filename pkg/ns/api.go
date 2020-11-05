@@ -498,6 +498,17 @@ func (p *Provider) PromoteFilesystem(path string) error {
     return p.sendRequest(http.MethodPost, uri, nil)
 }
 
+// PromoteVolume promotes a cloned volume to be no longer dependent on its original snapshot
+func (p *Provider) PromoteVolume(path string) error {
+    if path == "" {
+        return fmt.Errorf("Volume path is required")
+    }
+
+    uri := fmt.Sprintf("/storage/volumes/%s/promote", url.PathEscape(path))
+
+    return p.sendRequest(http.MethodPost, uri, nil)
+}
+
 // CreateNfsShareParams - params to create NFS share
 type CreateNfsShareParams struct {
     // filesystem path w/o leading slash
@@ -1028,10 +1039,81 @@ func (p *Provider) DestroyLunMapping(id string) error {
 
 func (p *Provider) DestroyVolume(path string, params DestroyVolumeParams) error {
     err := p.destroyVolume(path, params.DestroySnapshots)
-    if err != nil {
+    if err == nil {
+        return nil
+    } else if !params.PromoteMostRecentCloneIfExists || !IsAlreadyExistNefError(err) {
         return err
     }
-    return nil
+
+    // If here then volume deletion request has failed because
+    // the volume has dependent clones (EEXIST error code), trying
+    // to promote the most recent clone to make the volume independent:
+
+    maxAttemptCount := 3
+    var mostRecentError error
+
+    for i := 0; i < maxAttemptCount; i++ {
+        mostRecentError = nil
+
+        snapshots, err := p.GetSnapshots(path, true)
+        if err != nil {
+            mostRecentError = fmt.Errorf("failed to get snapshot list: %s", err)
+            break
+        }
+
+        var maxCreationTxg int
+        var mostRecentClone string
+        for _, s := range snapshots {
+            // to get "clones" and "creationTxg" fields that are not presented in the list response
+            snapshot, err := p.GetSnapshot(s.Path)
+            if err != nil {
+                mostRecentError = fmt.Errorf("failed to get '%s' snapshost's info: %s", s.Path, err)
+                break
+            }
+            creationTxg, err := strconv.Atoi(snapshot.CreationTxg)
+            if err != nil {
+                mostRecentError = fmt.Errorf(
+                    "snapshot '%s': failed to convert 'creationTxg' value '%s' to integer: %s",
+                    s.Path,
+                    snapshot.CreationTxg,
+                    err,
+                )
+                break
+            } else if len(snapshot.Clones) > 0 && creationTxg > maxCreationTxg {
+                mostRecentClone = snapshot.Clones[0]
+                maxCreationTxg = creationTxg
+            }
+        }
+        if mostRecentError != nil {
+            // Failed to determine the most recent clone.
+            // Give another chance (or exit if max attempt count exceeded) if any error happened
+            // while getting each snaphost's information. For example, the snapshot got deleted
+            // right after snapshot list request, but before requesting its information.
+            continue
+        }
+
+        if mostRecentClone != "" {
+            err := p.PromoteVolume(mostRecentClone)
+            if err != nil {
+                mostRecentError = fmt.Errorf("failed to promote clone '%s': %s", mostRecentClone, err)
+                continue
+            }
+        }
+
+        mostRecentError = p.destroyVolume(path, params.DestroySnapshots)
+        if mostRecentError == nil {
+            return nil
+        } else if !IsAlreadyExistNefError(mostRecentError) { // if EEXIST code - volume still has dependent clones
+            break
+        }
+    }
+
+    // if not a NefError, wrap it into an explanation
+    if !IsNefError(mostRecentError) {
+        return fmt.Errorf("Failed to delete volume '%s': %s", path, mostRecentError)
+    }
+
+    return mostRecentError
 }
 
 func (p *Provider) destroyVolume(path string, destroySnapshots bool) error {

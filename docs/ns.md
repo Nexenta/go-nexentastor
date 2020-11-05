@@ -687,6 +687,14 @@ func (p *Provider) PromoteFilesystem(path string) error
 PromoteFilesystem promotes a cloned filesystem to be no longer dependent on its
 original snapshot
 
+#### func (*Provider) PromoteVolume
+
+```go
+func (p *Provider) PromoteVolume(path string) error
+```
+PromoteVolume promotes a cloned volume to be no longer dependent on its original
+snapshot
+
 #### func (*Provider) SetFilesystemACL
 
 ```go
@@ -786,6 +794,7 @@ type ProviderInterface interface {
 	DestroyVolume(path string, params DestroyVolumeParams) error
 	GetVolumeGroup(path string) (VolumeGroup, error)
 	GetVolumesWithStartingToken(parent string, startingToken string, limit int) ([]Volume, string, error)
+	PromoteVolume(path string) error
 
 	// iSCSI
 	CreateLunMapping(params CreateLunMappingParams) error
