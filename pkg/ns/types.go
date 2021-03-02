@@ -96,7 +96,7 @@ type Pool struct {
 }
 
 type TargetGroup struct {
-	Name string 		`json:"poolName"`
+	Name string 		`json:"name"`
 	Members []string 	`json:"members"`
 }
 
