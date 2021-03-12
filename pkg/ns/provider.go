@@ -72,12 +72,16 @@ type ProviderInterface interface {
 	GetLunMappings(params GetLunMappingsParams) (lunMappings []LunMapping, err error)
 	DestroyLunMapping(id string) error
 	CreateISCSITarget(params CreateISCSITargetParams) error
+	UpdateISCSITarget(name string, params UpdateISCSITargetParams) error
 	GetTargetGroups() ([]TargetGroup, error)
 	GetTargetGroup(name string) (targetGroup TargetGroup, err error)
 	CreateUpdateTargetGroup(params CreateTargetGroupParams) error
 	CreateHostGroup(params CreateHostGroupParams) error
 	GetHostGroups() ([]nefHostGroup, error)
 	UpdateHostGroup(path string, params UpdateHostGroupParams) error
+	GetRemoteInitiator(name string) (remoteInitiator RemoteInitiator, err error)
+	CreateRemoteInitiator(params CreateRemoteInitiatorParams) error
+	UpdateRemoteInitiator(name string, params UpdateRemoteInitiatorParams) error
 }
 
 // Provider - NexentaStor API provider

@@ -924,7 +924,53 @@ func (p *Provider) GetLunMapping(path string) (lunMapping LunMapping, err error)
     return response.Data[0], nil
 }
 
-// CreateISCSITargetParamas - params to create new iSCSI target
+// CreateRemoteInitiatorParams - params to create credentials for remote initiator
+type CreateRemoteInitiatorParams struct {
+    Name       string   `json:"name"`
+    ChapUser   string   `json:"chapUser"`
+    ChapSecret string   `json:"chapSecret"`
+}
+
+// CreateRemoteInitiator - create new remote initiator in NexentaStor
+func (p *Provider) CreateRemoteInitiator(params CreateRemoteInitiatorParams) error {
+    if params.Name == "" || params.ChapSecret == "" {
+        return fmt.Errorf(
+            "Parameters 'Name' and 'ChapSecret' are required, received: %+v", params)
+    }
+    err := p.sendRequest(http.MethodPost, "v1.2.6/san/iscsi/remoteInitiators", params)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
+// UpdateRemoteInitiatorParams - params to update credentials for remote initiator
+type UpdateRemoteInitiatorParams struct {
+    ChapUser   string   `json:"chapUser"`
+    ChapSecret string   `json:"chapSecret"`
+}
+
+// UpdateRemoteInitiator updates remote initiator for given name
+func (p *Provider) UpdateRemoteInitiator(name string, params UpdateRemoteInitiatorParams) error {
+    if name == "" {
+        return fmt.Errorf("Parameter 'name' is required, received: %+v", name)
+    }
+
+    uri :=  fmt.Sprintf("v1.2.6/san/iscsi/remoteInitiators/%s", url.PathEscape(name))
+    return p.sendRequest(http.MethodPut, uri, params)
+}
+
+// GetRemoteInitiator - returns remote initiator object for given name
+func (p *Provider) GetRemoteInitiator(name string) (remoteInitiator RemoteInitiator, err error) {
+    if name == "" {
+        return remoteInitiator, fmt.Errorf("Remote Initiator name is empty")
+    }
+    uri := p.RestClient.BuildURI(fmt.Sprintf("v1.2.6/san/iscsi/remoteInitiators/%s", url.PathEscape(name)), map[string]string{})
+    err = p.sendRequestWithStruct(http.MethodGet, uri, nil, &remoteInitiator)
+    return remoteInitiator, err
+}
+
+// CreateISCSITargetParams - params to create new iSCSI target
 type CreateISCSITargetParams struct {
     Name       string   `json:"name"`
     Portals    []Portal `json:"portals"`
@@ -940,6 +986,21 @@ func (p *Provider) CreateISCSITarget (params CreateISCSITargetParams) error {
         return err
     }
     return nil
+}
+
+// UpdateISCSITargetParams - params to update existing iSCSI target
+type UpdateISCSITargetParams struct {
+    Authentication         string   `json:"authentication"`
+}
+
+// UpdateISCSITarget - update existing iSCSI target
+func (p *Provider) UpdateISCSITarget(name string, params UpdateISCSITargetParams) (err error) {
+    if name == "" {
+        return fmt.Errorf("iSCSI target name must not be empty.")
+    }
+
+    uri :=  fmt.Sprintf("san/iscsi/targets/%s", url.PathEscape(name))
+    return p.sendRequest(http.MethodPut, uri, params)
 }
 
 // GetTargetGroups - returns the list of targetGroups on NexentaStor

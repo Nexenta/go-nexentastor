@@ -97,7 +97,7 @@ release:
 generate-changelog-and-docs:
 	@echo "Release tag: ${VERSION}\n"
 	docker build -f ${DOCKER_FILE_PRE_RELEASE} -t ${DOCKER_IMAGE_PRE_RELEASE} --build-arg VERSION=${VERSION} .
-	-docker rm -f ${DOCKER_CONTAINER_PRE_RELEASE}
+	docker rm -f ${DOCKER_CONTAINER_PRE_RELEASE}
 	docker create --name ${DOCKER_CONTAINER_PRE_RELEASE} ${DOCKER_IMAGE_PRE_RELEASE}
 	docker cp ${DOCKER_CONTAINER_PRE_RELEASE}:/go/src/github.com/Nexenta/go-nexentastor/CHANGELOG.md ./CHANGELOG.md
 	docker cp ${DOCKER_CONTAINER_PRE_RELEASE}:/go/src/github.com/Nexenta/go-nexentastor/docs ./

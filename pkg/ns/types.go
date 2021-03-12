@@ -56,6 +56,13 @@ type LunMapping struct {
 	Lun 		int    `json:"lun"`
 }
 
+// RemoteInitiator - NexentaStor remote initiator for CHAP access
+type RemoteInitiator struct {
+	Name             string `json:"name"`
+	ChapUser   		 string `json:"chapUser"`
+	ChapSecretSet    bool   `json:"chapSecretSet"`
+}
+
 func (fs *Filesystem) String() string {
 	return fs.Path
 }

@@ -125,7 +125,7 @@ type CreateISCSITargetParams struct {
 }
 ```
 
-CreateISCSITargetParamas - params to create new iSCSI target
+CreateISCSITargetParams - params to create new iSCSI target
 
 #### type CreateLunMappingParams
 
@@ -151,6 +151,18 @@ type CreateNfsShareParams struct {
 ```
 
 CreateNfsShareParams - params to create NFS share
+
+#### type CreateRemoteInitiatorParams
+
+```go
+type CreateRemoteInitiatorParams struct {
+	Name       string `json:"name"`
+	ChapUser   string `json:"chapUser"`
+	ChapSecret string `json:"chapSecret"`
+}
+```
+
+CreateRemoteInitiatorParams - params to create credentials for remote initiator
 
 #### type CreateSmbShareParams
 
@@ -424,6 +436,13 @@ CreateNfsShare creates NFS share on specified filesystem CLI test:
     mkdir -p /mnt/test && sudo mount -v -t nfs HOST:/pool/fs /mnt/test
     findmnt /mnt/test
 
+#### func (*Provider) CreateRemoteInitiator
+
+```go
+func (p *Provider) CreateRemoteInitiator(params CreateRemoteInitiatorParams) error
+```
+CreateRemoteInitiator - create new remote initiator in NexentaStor
+
 #### func (*Provider) CreateSmbShare
 
 ```go
@@ -584,6 +603,13 @@ func (p *Provider) GetRSFClusters() ([]RSFCluster, error)
 ```
 GetRSFClusters returns RSF clusters from NS
 
+#### func (*Provider) GetRemoteInitiator
+
+```go
+func (p *Provider) GetRemoteInitiator(name string) (remoteInitiator RemoteInitiator, err error)
+```
+GetRemoteInitiator - returns remote initiator object for given name
+
 #### func (*Provider) GetSmbShareName
 
 ```go
@@ -722,6 +748,20 @@ UpdateFilesystem updates filesystem by path
 func (p *Provider) UpdateHostGroup(path string, params UpdateHostGroupParams) error
 ```
 
+#### func (*Provider) UpdateISCSITarget
+
+```go
+func (p *Provider) UpdateISCSITarget(name string, params UpdateISCSITargetParams) (err error)
+```
+UpdateISCSITarget - update existing iSCSI target
+
+#### func (*Provider) UpdateRemoteInitiator
+
+```go
+func (p *Provider) UpdateRemoteInitiator(name string, params UpdateRemoteInitiatorParams) error
+```
+UpdateRemoteInitiator updates remote initiator for given name
+
 #### func (*Provider) UpdateVolume
 
 ```go
@@ -802,12 +842,16 @@ type ProviderInterface interface {
 	GetLunMappings(params GetLunMappingsParams) (lunMappings []LunMapping, err error)
 	DestroyLunMapping(id string) error
 	CreateISCSITarget(params CreateISCSITargetParams) error
+	UpdateISCSITarget(name string, params UpdateISCSITargetParams) error
 	GetTargetGroups() ([]TargetGroup, error)
 	GetTargetGroup(name string) (targetGroup TargetGroup, err error)
 	CreateUpdateTargetGroup(params CreateTargetGroupParams) error
 	CreateHostGroup(params CreateHostGroupParams) error
 	GetHostGroups() ([]nefHostGroup, error)
 	UpdateHostGroup(path string, params UpdateHostGroupParams) error
+	GetRemoteInitiator(name string) (remoteInitiator RemoteInitiator, err error)
+	CreateRemoteInitiator(params CreateRemoteInitiatorParams) error
+	UpdateRemoteInitiator(name string, params UpdateRemoteInitiatorParams) error
 }
 ```
 
@@ -829,6 +873,18 @@ type RSFCluster struct {
 ```
 
 RSFCluster - RSF cluster with a name
+
+#### type RemoteInitiator
+
+```go
+type RemoteInitiator struct {
+	Name          string `json:"name"`
+	ChapUser      string `json:"chapUser"`
+	ChapSecretSet bool   `json:"chapSecretSet"`
+}
+```
+
+RemoteInitiator - NexentaStor remote initiator for CHAP access
 
 #### type Resolver
 
@@ -911,7 +967,7 @@ func (snapshot *Snapshot) String() string
 
 ```go
 type TargetGroup struct {
-	Name    string   `json:"poolName"`
+	Name    string   `json:"name"`
 	Members []string `json:"members"`
 }
 ```
@@ -938,6 +994,27 @@ type UpdateHostGroupParams struct {
 ```
 
 UpdateHostGroupParams - params to update a hostGroup
+
+#### type UpdateISCSITargetParams
+
+```go
+type UpdateISCSITargetParams struct {
+	Authentication string `json:"authentication"`
+}
+```
+
+UpdateISCSITargetParams - params to update existing iSCSI target
+
+#### type UpdateRemoteInitiatorParams
+
+```go
+type UpdateRemoteInitiatorParams struct {
+	ChapUser   string `json:"chapUser"`
+	ChapSecret string `json:"chapSecret"`
+}
+```
+
+UpdateRemoteInitiatorParams - params to update credentials for remote initiator
 
 #### type UpdateTargetGroupParams
 
