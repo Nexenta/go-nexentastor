@@ -1,6 +1,6 @@
 
 <a name="v2.6.0"></a>
-## [v2.6.0](https://github.com/Nexenta/go-nexentastor/compare/v2.5.7...v2.6.0) (2021-03-12)
+## [v2.6.0](https://github.com/Nexenta/go-nexentastor/compare/v2.5.7...v2.6.0) (2021-03-15)
 
 
 <a name="v2.5.7"></a>
