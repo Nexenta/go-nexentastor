@@ -843,8 +843,9 @@ func (p *Provider) GetVolumeGroup(path string) (volumeGroup VolumeGroup,err erro
 // CreateVolumeParams - params to create a volume
 type CreateVolumeParams struct {
     // volume path w/o leading slash
-    Path        string `json:"path"`
-    VolumeSize  int64  `json:"volumeSize"`
+    Path                string `json:"path"`
+    VolumeSize          int64  `json:"volumeSize"`
+    SparseVolume        bool   `json:"sparseVolume"` 
 }
 
 // CreateVolume creates volume by path and size
