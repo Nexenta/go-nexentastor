@@ -63,6 +63,17 @@ type RemoteInitiator struct {
 	ChapSecretSet    bool   `json:"chapSecretSet"`
 }
 
+// ISCSITarget - NexentaStor iSCSI target
+type ISCSITarget struct {
+	Name 				string
+	State 				string
+	Authentication 		string
+	Alias 				string
+	ChapSecretSet 		bool
+	ChapUser 			string
+	Portals     		[]Portal
+}
+
 func (fs *Filesystem) String() string {
 	return fs.Path
 }
@@ -198,4 +209,8 @@ type nefHostGroupsResponse struct {
 
 type nefTargetGroupsResponse struct {
 	Data 	[]TargetGroup  `json:"data"`
+}
+
+type nefTargetsResponse struct {
+	Data 	[]ISCSITarget  `json:"data"`
 }

@@ -971,6 +971,30 @@ func (p *Provider) GetRemoteInitiator(name string) (remoteInitiator RemoteInitia
     return remoteInitiator, err
 }
 
+func (p *Provider) GetISCSITarget(name string) (target ISCSITarget, err error) {
+    if name == "" {
+        return target, fmt.Errorf("iSCSI target name is empty")
+    }
+
+    uri := p.RestClient.BuildURI("san/iscsi/targets", map[string]string{
+        "name": name,
+        "fields": "name,state,authentication,alias,chapSecretSet,chapUser,portals",
+    })
+    response := nefTargetsResponse{}
+    err = p.sendRequestWithStruct(http.MethodGet, uri, nil, &response)
+
+    if err != nil {
+        return target, err
+    }
+
+    if len(response.Data) == 0 {
+        return target, &NefError{Code: "ENOENT", Err: fmt.Errorf("iSCSI target '%s' not found", name)}
+    }
+
+    return response.Data[0], nil
+
+}
+
 // CreateISCSITargetParams - params to create new iSCSI target
 type CreateISCSITargetParams struct {
     Name       string   `json:"name"`
