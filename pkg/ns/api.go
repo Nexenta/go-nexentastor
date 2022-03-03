@@ -21,6 +21,7 @@ func (p *Provider) LogIn() error {
         Password: p.Password,
     }
 
+    p.RestClient.SetAuthToken("")
     _, bodyBytes, err := p.RestClient.Send(http.MethodPost, "auth/login", data)
     if err != nil {
         // try to parse error from rest response

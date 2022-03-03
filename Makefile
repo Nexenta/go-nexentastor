@@ -86,8 +86,7 @@ release:
 		3. Git tag 'v${VERSION}' will be created and pushed to the repository.\n\n \
 		Are you sure? [y/N]: "
 	@(read ANSWER && case "$$ANSWER" in [yY]) true;; *) false;; esac)
-	make generate-changelog-and-docs
-	git add CHANGELOG.md docs
+	git add .
 	git commit -m "release v${VERSION}"
 	git push
 	git tag v${VERSION}

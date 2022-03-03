@@ -69,7 +69,6 @@ func (c *Client) Send(method, path string, data interface{}) (int, []byte, error
 	uri := fmt.Sprintf("%s/%s", c.address, path)
 
 	l.Debug("send request")
-
 	// send request data as json
 	var jsonDataReader io.Reader
 	if data != nil {
@@ -88,6 +87,10 @@ func (c *Client) Send(method, path string, data interface{}) (int, []byte, error
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+	// Remove auth header if token is empty
+	if c.authToken == "" {
+		req.Header.Del("Authorization")
+	}
 	if len(c.authToken) != 0 {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.authToken))
 	}
