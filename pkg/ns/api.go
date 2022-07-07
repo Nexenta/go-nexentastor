@@ -54,13 +54,13 @@ func (p *Provider) LogIn() error {
 
 // GetLicense returns NexentaStor license
 func (p *Provider) GetLicense() (license License, err error) {
-    err = p.sendRequestWithStruct(http.MethodGet, "/settings/license", nil, &license)
+    err = p.sendRequestWithStruct(http.MethodGet, "settings/license", nil, &license)
     return license, err
 }
 
 // GetPools returns NexentaStor pools
 func (p *Provider) GetPools() ([]Pool, error) {
-    uri := p.RestClient.BuildURI("/storage/pools", map[string]string{
+    uri := p.RestClient.BuildURI("storage/pools", map[string]string{
         "fields": "poolName,health,status",
     })
 
@@ -75,7 +75,7 @@ func (p *Provider) GetPools() ([]Pool, error) {
 
 // GetFilesystemAvailableCapacity returns NexentaStor filesystem available size by its path
 func (p *Provider) GetFilesystemAvailableCapacity(path string) (int64, error) {
-    uri := p.RestClient.BuildURI("/storage/filesystems", map[string]string{
+    uri := p.RestClient.BuildURI("storage/filesystems", map[string]string{
         "path":   path,
         "fields": "bytesAvailable",
     })
@@ -100,7 +100,7 @@ func (p *Provider) GetFilesystem(path string) (filesystem Filesystem, err error)
         return filesystem, fmt.Errorf("Filesystem path is empty")
     }
 
-    uri := p.RestClient.BuildURI("/storage/filesystems", map[string]string{
+    uri := p.RestClient.BuildURI("storage/filesystems", map[string]string{
         "path":   path,
         "fields": "path,mountPoint,bytesAvailable,bytesUsed,sharedOverNfs,sharedOverSmb",
     })
@@ -266,7 +266,7 @@ func (p *Provider) GetFilesystemsSlice(parent string, limit, offset int) ([]File
         )
     }
 
-    uri := p.RestClient.BuildURI("/storage/filesystems", map[string]string{
+    uri := p.RestClient.BuildURI("storage/filesystems", map[string]string{
         "parent": parent,
         "limit":  fmt.Sprint(limit + 1), // the result includes parent itself
         "offset": fmt.Sprint(offset),
@@ -305,7 +305,7 @@ func (p *Provider) GetVolumesSlice(parent string, limit, offset int) ([]Volume, 
         )
     }
 
-    uri := p.RestClient.BuildURI("/storage/volumes", map[string]string{
+    uri := p.RestClient.BuildURI("storage/volumes", map[string]string{
         "parent": parent,
         "limit":  fmt.Sprint(limit),
         "offset": fmt.Sprint(offset),
@@ -341,7 +341,7 @@ func (p *Provider) CreateFilesystem(params CreateFilesystemParams) error {
 
     //TODO consider to add option https://jira.nexenta.com/browse/NEX-17476?focusedCommentId=154590
 
-    return p.sendRequest(http.MethodPost, "/storage/filesystems", params)
+    return p.sendRequest(http.MethodPost, "storage/filesystems", params)
 }
 
 // UpdateFilesystemParams - params to update filesystem
@@ -356,7 +356,7 @@ func (p *Provider) UpdateFilesystem(path string, params UpdateFilesystemParams) 
         return fmt.Errorf("Parameter 'path' is required")
     }
 
-    uri :=  fmt.Sprintf("/storage/filesystems/%s", url.PathEscape(path))
+    uri :=  fmt.Sprintf("storage/filesystems/%s", url.PathEscape(path))
     return p.sendRequest(http.MethodPut, uri, params)
 }
 
@@ -478,7 +478,7 @@ func (p *Provider) destroyFilesystem(path string, destroySnapshots bool) error {
     }
 
     uri := p.RestClient.BuildURI(
-        fmt.Sprintf("/storage/filesystems/%s", url.PathEscape(path)),
+        fmt.Sprintf("storage/filesystems/%s", url.PathEscape(path)),
         map[string]string{
             "force":     "true",
             "snapshots": strconv.FormatBool(destroySnapshots),
@@ -494,7 +494,7 @@ func (p *Provider) PromoteFilesystem(path string) error {
         return fmt.Errorf("Filesystem path is required")
     }
 
-    uri := fmt.Sprintf("/storage/filesystems/%s/promote", url.PathEscape(path))
+    uri := fmt.Sprintf("storage/filesystems/%s/promote", url.PathEscape(path))
 
     return p.sendRequest(http.MethodPost, uri, nil)
 }
@@ -505,7 +505,7 @@ func (p *Provider) PromoteVolume(path string) error {
         return fmt.Errorf("Volume path is required")
     }
 
-    uri := fmt.Sprintf("/storage/volumes/%s/promote", url.PathEscape(path))
+    uri := fmt.Sprintf("storage/volumes/%s/promote", url.PathEscape(path))
 
     return p.sendRequest(http.MethodPost, uri, nil)
 }
@@ -581,7 +581,7 @@ func (p *Provider) DeleteNfsShare(path string) error {
         return fmt.Errorf("Filesystem path is empty")
     }
 
-    uri := fmt.Sprintf("/nas/nfs/%s", url.PathEscape(path))
+    uri := fmt.Sprintf("nas/nfs/%s", url.PathEscape(path))
 
     return p.sendRequest(http.MethodDelete, uri, nil)
 }
@@ -614,7 +614,7 @@ func (p *Provider) GetSmbShareName(path string) (string, error) {
     }
 
     uri := p.RestClient.BuildURI(
-        fmt.Sprintf("/nas/smb/%s", url.PathEscape(path)),
+        fmt.Sprintf("nas/smb/%s", url.PathEscape(path)),
         map[string]string{"fields": "shareName,shareState"}, //TODO check shareState value?
     )
 
@@ -633,7 +633,7 @@ func (p *Provider) DeleteSmbShare(path string) error {
         return fmt.Errorf("Filesystem path is empty")
     }
 
-    uri := fmt.Sprintf("/nas/smb/%s", url.PathEscape(path))
+    uri := fmt.Sprintf("nas/smb/%s", url.PathEscape(path))
 
     return p.sendRequest(http.MethodDelete, uri, nil)
 }
@@ -644,7 +644,7 @@ func (p *Provider) SetFilesystemACL(path string, aclRuleSet ACLRuleSet) error {
         return fmt.Errorf("Filesystem path is required")
     }
 
-    uri := fmt.Sprintf("/storage/filesystems/%s/acl", url.PathEscape(path))
+    uri := fmt.Sprintf("storage/filesystems/%s/acl", url.PathEscape(path))
 
     permissions := []string{}
     if aclRuleSet == ACLReadOnly {
@@ -678,7 +678,7 @@ func (p *Provider) CreateSnapshot(params CreateSnapshotParams) error {
         return fmt.Errorf("Parameter 'CreateSnapshotParams.Path' is required")
     }
 
-    return p.sendRequest(http.MethodPost, "/storage/snapshots", params)
+    return p.sendRequest(http.MethodPost, "storage/snapshots", params)
 }
 
 // GetSnapshot returns snapshot by its path
@@ -688,7 +688,7 @@ func (p *Provider) GetSnapshot(path string) (snapshot Snapshot, err error) {
         return snapshot, fmt.Errorf("Snapshot path is empty")
     }
 
-    uri := p.RestClient.BuildURI(fmt.Sprintf("/storage/snapshots/%s", url.PathEscape(path)), map[string]string{
+    uri := p.RestClient.BuildURI(fmt.Sprintf("storage/snapshots/%s", url.PathEscape(path)), map[string]string{
         "fields": "path,name,parent,creationTime,clones,creationTxg",
         //TODO return "bytesReferenced" and check on volume creation
     })
@@ -704,7 +704,7 @@ func (p *Provider) GetSnapshots(volumePath string, recursive bool) ([]Snapshot, 
         return []Snapshot{}, fmt.Errorf("Snapshots volume path is empty")
     }
 
-    uri := p.RestClient.BuildURI("/storage/snapshots", map[string]string{
+    uri := p.RestClient.BuildURI("storage/snapshots", map[string]string{
         "parent":    volumePath,
         "fields":    "path,name,parent,creationTime",
         "recursive": strconv.FormatBool(recursive),
@@ -725,7 +725,7 @@ func (p *Provider) DestroySnapshot(path string) error {
         return fmt.Errorf("Snapshot path is required")
     }
 
-    uri := fmt.Sprintf("/storage/snapshots/%s", url.PathEscape(path))
+    uri := fmt.Sprintf("storage/snapshots/%s", url.PathEscape(path))
 
     return p.sendRequest(http.MethodDelete, uri, nil)
 }
@@ -747,14 +747,14 @@ func (p *Provider) CloneSnapshot(path string, params CloneSnapshotParams) error 
         return fmt.Errorf("Parameter 'CloneSnapshotParams.TargetPath' is required")
     }
 
-    uri := fmt.Sprintf("/storage/snapshots/%s/clone", url.PathEscape(path))
+    uri := fmt.Sprintf("storage/snapshots/%s/clone", url.PathEscape(path))
 
     return p.sendRequest(http.MethodPost, uri, params)
 }
 
 // GetRSFClusters returns RSF clusters from NS
 func (p *Provider) GetRSFClusters() ([]RSFCluster, error) {
-    uri := p.RestClient.BuildURI("/rsf/clusters", map[string]string{
+    uri := p.RestClient.BuildURI("rsf/clusters", map[string]string{
         "fields": "clusterName,nodes",
     })
 
@@ -769,7 +769,7 @@ func (p *Provider) GetRSFClusters() ([]RSFCluster, error) {
 
 // IsJobDone checks if job is done by jobId
 func (p *Provider) IsJobDone(jobID string) (bool, error) {
-    uri := fmt.Sprintf("/jobStatus/%s", jobID)
+    uri := fmt.Sprintf("jobStatus/%s", jobID)
 
     statusCode, bodyBytes, err := p.RestClient.Send(http.MethodGet, uri, nil)
     if err != nil { // request failed
@@ -801,7 +801,7 @@ func (p *Provider) GetVolume(path string) (volume Volume, err error) {
         return volume, fmt.Errorf("Volume path is empty")
     }
 
-    uri := p.RestClient.BuildURI("/storage/volumes", map[string]string{
+    uri := p.RestClient.BuildURI("storage/volumes", map[string]string{
         "path":   path,
     })
 
@@ -824,7 +824,7 @@ func (p *Provider) GetVolumeGroup(path string) (volumeGroup VolumeGroup,err erro
         return volumeGroup, fmt.Errorf("VolumeGroup path is empty")
     }
 
-    uri := p.RestClient.BuildURI("/storage/volumeGroups", map[string]string{
+    uri := p.RestClient.BuildURI("storage/volumeGroups", map[string]string{
         "path":   path,
     })
 
@@ -856,7 +856,7 @@ func (p *Provider) CreateVolume(params CreateVolumeParams) error {
             "Parameters 'Volume.Path' is required, received %+v", params)
     }
 
-    return p.sendRequest(http.MethodPost, "/storage/volumes", params)
+    return p.sendRequest(http.MethodPost, "storage/volumes", params)
 }
 
 // UpdateVolumeParams - params to update volume
@@ -871,7 +871,7 @@ func (p *Provider) UpdateVolume(path string, params UpdateVolumeParams) error {
         return fmt.Errorf("Parameter 'path' is required")
     }
 
-    uri :=  fmt.Sprintf("/storage/volumes/%s", url.PathEscape(path))
+    uri :=  fmt.Sprintf("storage/volumes/%s", url.PathEscape(path))
     return p.sendRequest(http.MethodPut, uri, params)
 }
 
@@ -895,7 +895,7 @@ func (p *Provider) GetLunMappings(params GetLunMappingsParams) (lunMappings []Lu
     if params.HostGroup != "" {
         reqParams["hostGroup"] = params.HostGroup
     }
-    uri := p.RestClient.BuildURI("/san/lunMappings", reqParams)
+    uri := p.RestClient.BuildURI("san/lunMappings", reqParams)
     response := nefLunMappingsResponse{}
     err = p.sendRequestWithStruct(http.MethodGet, uri, nil, &response)
     if err != nil {
@@ -910,7 +910,7 @@ func (p *Provider) GetLunMapping(path string) (lunMapping LunMapping, err error)
     if path == "" {
             return lunMapping, fmt.Errorf("Volume path is empty")
     }
-    uri := p.RestClient.BuildURI("/san/lunMappings", map[string]string{
+    uri := p.RestClient.BuildURI("san/lunMappings", map[string]string{
         "volume": path,
         "fields": "id,volume,targetGroup,hostGroup,lun",
     })
@@ -1007,7 +1007,7 @@ func (p *Provider) CreateISCSITarget (params CreateISCSITargetParams) error {
     if params.Name == "" {
         return fmt.Errorf("Parameters 'Name' and 'Portal' are required, received: %+v", params)
     }
-    err := p.sendRequest(http.MethodPost, "/san/iscsi/targets", params)
+    err := p.sendRequest(http.MethodPost, "san/iscsi/targets", params)
     if !IsAlreadyExistNefError(err) {
         return err
     }
@@ -1032,7 +1032,7 @@ func (p *Provider) UpdateISCSITarget(name string, params UpdateISCSITargetParams
 // GetTargetGroups - returns the list of targetGroups on NexentaStor
 func (p* Provider) GetTargetGroups() ([]TargetGroup, error) {
     response := nefTargetGroupsResponse{}
-    err := p.sendRequestWithStruct(http.MethodGet, "/san/targetgroups", nil, &response)
+    err := p.sendRequestWithStruct(http.MethodGet, "san/targetgroups", nil, &response)
     if err != nil {
         return nil, err
     }
@@ -1046,7 +1046,7 @@ func (p *Provider) GetTargetGroup(name string) (targetGroup TargetGroup, err err
         return targetGroup, fmt.Errorf("targetGroup name is empty")
     }
 
-    uri := p.RestClient.BuildURI(fmt.Sprintf("/san/targetgroups/%s", url.PathEscape(name)), map[string]string{
+    uri := p.RestClient.BuildURI(fmt.Sprintf("san/targetgroups/%s", url.PathEscape(name)), map[string]string{
         "fields": "name,members",
     })
 
@@ -1072,12 +1072,12 @@ func (p *Provider) CreateUpdateTargetGroup(params CreateTargetGroupParams) error
         return fmt.Errorf(
             "Parameters 'Name' and 'Members' are required, received: %+v", params)
     }
-    err := p.sendRequest(http.MethodPost, "/san/targetgroups", params)
+    err := p.sendRequest(http.MethodPost, "san/targetgroups", params)
     if err != nil {
         if !IsAlreadyExistNefError(err) {
             return err
         } else {
-            uri :=  fmt.Sprintf("/san/targetgroups/%s", url.PathEscape(params.Name))
+            uri :=  fmt.Sprintf("san/targetgroups/%s", url.PathEscape(params.Name))
             err = p.sendRequest(http.MethodPut, uri, UpdateTargetGroupParams{
                 Members: params.Members,
             })
@@ -1102,7 +1102,7 @@ func (p *Provider) CreateLunMapping(params CreateLunMappingParams) error {
         return fmt.Errorf(
             "Parameters 'HostGroup', 'Target' and 'TargetGroup' are required, received: %+v", params)
     }
-    err := p.sendRequest(http.MethodPost, "/san/lunMappings", params)
+    err := p.sendRequest(http.MethodPost, "san/lunMappings", params)
     if !IsAlreadyExistNefError(err) {
         return err
     }
@@ -1119,7 +1119,7 @@ func (p *Provider) DestroyLunMapping(id string) error {
         return fmt.Errorf("LunMapping id is required")
     }
 
-    uri := fmt.Sprintf("/san/lunMappings/%s", id)
+    uri := fmt.Sprintf("san/lunMappings/%s", id)
 
     return p.sendRequest(http.MethodDelete, uri, nil)
 }
@@ -1209,7 +1209,7 @@ func (p *Provider) destroyVolume(path string, destroySnapshots bool) error {
     }
 
     uri := p.RestClient.BuildURI(
-        fmt.Sprintf("/storage/volumes/%s", url.PathEscape(path)),
+        fmt.Sprintf("storage/volumes/%s", url.PathEscape(path)),
         map[string]string{
             "snapshots": strconv.FormatBool(destroySnapshots),
         },
@@ -1231,7 +1231,7 @@ func (p *Provider) CreateHostGroup(params CreateHostGroupParams) error {
         return fmt.Errorf("HostGroup name and members cannot be empty, got %+v", params)
     }
 
-    err := p.sendRequest(http.MethodPost, "/san/hostgroups", params)
+    err := p.sendRequest(http.MethodPost, "san/hostgroups", params)
     if !IsAlreadyExistNefError(err) {
         return err
     }
@@ -1240,7 +1240,7 @@ func (p *Provider) CreateHostGroup(params CreateHostGroupParams) error {
 
 func (p *Provider) GetHostGroups() (hostGroups []nefHostGroup, err error) {
     response := nefHostGroupsResponse{}
-    err = p.sendRequestWithStruct(http.MethodGet, "/san/hostgroups", nil, &response)
+    err = p.sendRequestWithStruct(http.MethodGet, "san/hostgroups", nil, &response)
     if err != nil {
         return hostGroups, err
     }
@@ -1259,6 +1259,6 @@ func (p *Provider) UpdateHostGroup(path string, params UpdateHostGroupParams) er
         return fmt.Errorf("Parameter 'path' is required to update hostGroup")
     }
 
-    uri :=  fmt.Sprintf("/storage/hostgroups/%s", url.PathEscape(path))
+    uri :=  fmt.Sprintf("storage/hostgroups/%s", url.PathEscape(path))
     return p.sendRequest(http.MethodPut, uri, params)
 }
