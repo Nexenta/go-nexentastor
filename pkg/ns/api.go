@@ -755,7 +755,7 @@ func (p *Provider) CloneSnapshot(path string, params CloneSnapshotParams) error 
 // GetRSFClusters returns RSF clusters from NS
 func (p *Provider) GetRSFClusters() ([]RSFCluster, error) {
     uri := p.RestClient.BuildURI("rsf/clusters", map[string]string{
-        "fields": "clusterName,nodes",
+        "fields": "clusterName,nodes,services,health",
     })
 
     response := nefRsfClustersResponse{}

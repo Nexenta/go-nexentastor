@@ -32,6 +32,28 @@ type Filesystem struct {
 	BytesUsed      int64  `json:"bytesUsed"`
 }
 
+// Service response - NexentaStor /rsf/clusters
+type Service struct {
+	Size        int64    `json:"size"`
+	ServiceName string   `json:"serviceName"`
+	Status      []Status `json:"status"`
+}
+
+// Health response - NexentaStor /rsf/clusters
+type Health struct {
+	ServicesHealth          string `json:"servicesHealth"`
+	ClusterHealth           string `json:"clusterHealth"`
+	NetworkHeartbeatsHealth string `json:"networkHeartbeatsHealth"`
+	NodesHealth             string `json:"nodesHealth"`
+}
+
+// Status response - NexentaStor /rsf/clusters
+type Status struct {
+	Node      string `json:"node"`
+	Unblocked bool   `json:"unblocked"`
+	Status    string `json:"status"`
+}
+
 // Volume - NexentaStor volume
 type Volume struct {
 	Path 		string `json:"path"`
@@ -106,6 +128,8 @@ func (snapshot *Snapshot) String() string {
 // RSFCluster - RSF cluster with a name
 type RSFCluster struct {
 	Name string `json:"clusterName"`
+	Services []Service `json:"services"`
+	Health   Health    `json:"health"`
 }
 
 // Pool - NS pool
