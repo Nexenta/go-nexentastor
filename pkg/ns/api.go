@@ -972,6 +972,27 @@ func (p *Provider) GetRemoteInitiator(name string) (remoteInitiator RemoteInitia
     return remoteInitiator, err
 }
 
+func (p *Provider) GetISCSITargets(name string) ([]ISCSITarget, error) {
+	targets := []ISCSITarget{}
+	uri := p.RestClient.BuildURI("san/iscsi/targets", map[string]string{
+		"name":   name,
+		"fields": "name,state,authentication,alias,chapSecretSet,chapUser,portals",
+	})
+
+	response := nefTargetsResponse{}
+	err := p.sendRequestWithStruct(http.MethodGet, uri, nil, &response)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, target := range response.Data {
+		targets = append(targets, target)
+	}
+
+	return targets, nil
+}
+
 func (p *Provider) GetISCSITarget(name string) (target ISCSITarget, err error) {
     if name == "" {
         return target, fmt.Errorf("iSCSI target name is empty")

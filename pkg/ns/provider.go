@@ -74,6 +74,7 @@ type ProviderInterface interface {
 	CreateISCSITarget(params CreateISCSITargetParams) error
 	UpdateISCSITarget(name string, params UpdateISCSITargetParams) error
 	GetISCSITarget(name string) (target ISCSITarget, err error)
+	GetISCSITargets(name string) (target []ISCSITarget, err error)
 	GetTargetGroups() ([]TargetGroup, error)
 	GetTargetGroup(name string) (targetGroup TargetGroup, err error)
 	CreateUpdateTargetGroup(params CreateTargetGroupParams) error
